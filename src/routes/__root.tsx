@@ -84,14 +84,17 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       {
         property: "og:description",
         content:
-          "Recover storage safely. Protect memories. A calm, professional Android storage assistant.",
+          "Recover storage safely on Android. Compress photos and videos while protected originals stay in the Safe Vault.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "K-Ai Storage Saver" },
+      { name: "twitter:description", content: "Recover storage safely on Android. Compress photos and videos while protected originals stay in the Safe Vault." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/fffad821-f537-4d13-a6f9-b1478300ecb4/id-preview-8786008c--941b3f40-c622-4190-b2df-d81b7e786645.lovable.app-1784173815373.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/fffad821-f537-4d13-a6f9-b1478300ecb4/id-preview-8786008c--941b3f40-c622-4190-b2df-d81b7e786645.lovable.app-1784173815373.png" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
-      { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
       {
         rel: "stylesheet",
         href: "https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;600&family=Google+Sans+Text:wght@400;500;600&display=swap",
