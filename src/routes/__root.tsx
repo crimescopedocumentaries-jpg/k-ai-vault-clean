@@ -11,6 +11,7 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import { SettingsProvider } from "../lib/settings";
 
 function NotFoundComponent() {
   return (
@@ -129,9 +130,11 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   return (
     <QueryClientProvider client={queryClient}>
-      <div className="phone-frame flex flex-col">
-        <Outlet />
-      </div>
+      <SettingsProvider>
+        <div className="phone-frame flex flex-col">
+          <Outlet />
+        </div>
+      </SettingsProvider>
     </QueryClientProvider>
   );
 }
