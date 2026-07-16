@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as WelcomeRouteImport } from './routes/welcome'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as ReviewRouteImport } from './routes/review'
 import { Route as PermissionsRouteImport } from './routes/permissions'
 import { Route as CompleteRouteImport } from './routes/complete'
@@ -38,6 +39,11 @@ import { Route as AppVaultDeletedRouteImport } from './routes/_app.vault.deleted
 const WelcomeRoute = WelcomeRouteImport.update({
   id: '/welcome',
   path: '/welcome',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ReviewRoute = ReviewRouteImport.update({
@@ -165,6 +171,7 @@ export interface FileRoutesByFullPath {
   '/complete': typeof CompleteRoute
   '/permissions': typeof PermissionsRoute
   '/review': typeof ReviewRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/welcome': typeof WelcomeRoute
   '/home': typeof AppHomeRoute
   '/jobs': typeof AppJobsRoute
@@ -191,6 +198,7 @@ export interface FileRoutesByTo {
   '/complete': typeof CompleteRoute
   '/permissions': typeof PermissionsRoute
   '/review': typeof ReviewRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/welcome': typeof WelcomeRoute
   '/home': typeof AppHomeRoute
   '/jobs': typeof AppJobsRoute
@@ -218,6 +226,7 @@ export interface FileRoutesById {
   '/complete': typeof CompleteRoute
   '/permissions': typeof PermissionsRoute
   '/review': typeof ReviewRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/welcome': typeof WelcomeRoute
   '/_app/home': typeof AppHomeRoute
   '/_app/jobs': typeof AppJobsRoute
@@ -246,6 +255,7 @@ export interface FileRouteTypes {
     | '/complete'
     | '/permissions'
     | '/review'
+    | '/sitemap.xml'
     | '/welcome'
     | '/home'
     | '/jobs'
@@ -272,6 +282,7 @@ export interface FileRouteTypes {
     | '/complete'
     | '/permissions'
     | '/review'
+    | '/sitemap.xml'
     | '/welcome'
     | '/home'
     | '/jobs'
@@ -298,6 +309,7 @@ export interface FileRouteTypes {
     | '/complete'
     | '/permissions'
     | '/review'
+    | '/sitemap.xml'
     | '/welcome'
     | '/_app/home'
     | '/_app/jobs'
@@ -326,6 +338,7 @@ export interface RootRouteChildren {
   CompleteRoute: typeof CompleteRoute
   PermissionsRoute: typeof PermissionsRoute
   ReviewRoute: typeof ReviewRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   WelcomeRoute: typeof WelcomeRoute
   CompressProgressRoute: typeof CompressProgressRoute
   ScanResultsRoute: typeof ScanResultsRoute
@@ -347,6 +360,13 @@ declare module '@tanstack/react-router' {
       path: '/welcome'
       fullPath: '/welcome'
       preLoaderRoute: typeof WelcomeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/review': {
@@ -560,6 +580,7 @@ const rootRouteChildren: RootRouteChildren = {
   CompleteRoute: CompleteRoute,
   PermissionsRoute: PermissionsRoute,
   ReviewRoute: ReviewRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
   WelcomeRoute: WelcomeRoute,
   CompressProgressRoute: CompressProgressRoute,
   ScanResultsRoute: ScanResultsRoute,
@@ -576,13 +597,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

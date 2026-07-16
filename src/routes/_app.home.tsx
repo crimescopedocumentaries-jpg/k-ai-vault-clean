@@ -9,6 +9,20 @@ import { formatBytes } from "@/lib/format";
 
 export const Route = createFileRoute("/_app/home")({
   component: Home,
+  head: () => ({
+    meta: [
+      { title: "Storage Dashboard — K-Ai Storage Saver" },
+      {
+        name: "description",
+        content:
+          "See your Android storage health, recoverable space, and smart recommendations at a glance in the K-Ai dashboard.",
+      },
+      { property: "og:title", content: "Storage Dashboard — K-Ai Storage Saver" },
+      { property: "og:description", content: "Storage health, recoverable space, and smart recommendations." },
+      { property: "og:url", content: "https://k-ai-vault-clean.lovable.app/home" },
+    ],
+    links: [{ rel: "canonical", href: "https://k-ai-vault-clean.lovable.app/home" }],
+  }),
 });
 
 type ScanState = "idle" | "scanned" | "recovered";
@@ -50,7 +64,7 @@ function Home() {
   return (
     <div className="flex flex-1 flex-col">
       <AppBar
-        title="K-Ai"
+        title="K-Ai — Storage Dashboard"
         leading={
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary-container">
             <Symbol name="hard_drive_2" filled className="text-on-primary-container" size={20} />
