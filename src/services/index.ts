@@ -43,6 +43,41 @@ export interface MediaItem {
   selected?: boolean;
 }
 
+export type PhotoFormat = "jpeg" | "jpg" | "png" | "webp" | "heif" | "heic";
+export type VideoFormat = "mp4" | "mov" | "3gp" | "mkv" | "webm" | "mpeg";
+export type SupportedFormat = PhotoFormat | VideoFormat | "zip";
+
+export const SUPPORTED_PHOTO_FORMATS: PhotoFormat[] = [
+  "jpeg",
+  "jpg",
+  "png",
+  "webp",
+  "heif",
+  "heic",
+];
+export const SUPPORTED_VIDEO_FORMATS: VideoFormat[] = [
+  "mp4",
+  "mov",
+  "3gp",
+  "mkv",
+  "webm",
+  "mpeg",
+];
+
+export interface MediaItem {
+  id: string;
+  name: string;
+  path: string;
+  bytes: number;
+  mimeType: string;
+  format?: SupportedFormat;
+  takenAt?: string;
+  thumbnailUri?: string;
+  selected?: boolean;
+  /** True when K-Ai has already compressed this file. Never compress twice. */
+  previouslyCompressed?: boolean;
+}
+
 export type CompressionQuality = "high" | "balanced" | "maximum";
 
 export interface CompressionRequest {
@@ -50,16 +85,51 @@ export interface CompressionRequest {
   quality: CompressionQuality;
   keepOriginals: boolean;
   moveOriginalsToVault: boolean;
+  /** Preserve GPS location, timestamps, orientation when supported. */
+  preserveMetadata: boolean;
 }
+
+/** Per-file pre-flight estimate produced by the Intelligent Decision Engine. */
+export interface CompressionEstimate {
+  itemId: string;
+  currentBytes: number;
+  expectedBytes: number;
+  expectedSavedBytes: number;
+  expectedQuality: "excellent" | "good" | "acceptable";
+  etaSeconds: number;
+  /** When savings are insignificant, engine reports skip + user-facing reason. */
+  recommendation: "compress" | "skip";
+  reason?: string;
+}
+
+export type CompressionStage =
+  | "queued"
+  | "estimating"
+  | "compressing"
+  | "verifying-integrity"
+  | "verifying-readability"
+  | "verifying-playback"
+  | "protecting-original"
+  | "replacing"
+  | "cleanup"
+  | "done"
+  | "rolled-back"
+  | "skipped";
 
 export interface CompressionProgress {
   jobId: string;
   processed: number;
   total: number;
+  skipped: number;
+  failed: number;
   currentFile?: string;
+  stage: CompressionStage;
   bytesSaved: number;
   etaSeconds: number;
+  /** Verified successful files only. Never fake progress. */
+  verifiedCount: number;
 }
+
 
 export interface VaultItem {
   id: string;
