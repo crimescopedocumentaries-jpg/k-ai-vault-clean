@@ -725,6 +725,7 @@ export type Services = {
   platform: PlatformInfoService;
   qa: QualityAssuranceService;
   release: ReleaseReadinessService;
+  ai: AIRecommendationService;
   repositories: {
     vault: VaultRepository;
     compressionHistory: CompressionHistoryRepository;
