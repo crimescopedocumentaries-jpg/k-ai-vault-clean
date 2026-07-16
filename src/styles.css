@@ -177,9 +177,10 @@
 @utility no-scrollbar {
   scrollbar-width: none;
   -ms-overflow-style: none;
-}
-@utility no-scrollbar::-webkit-scrollbar {
-  display: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 /* App phone frame — the app always renders within a mobile-shaped surface,
