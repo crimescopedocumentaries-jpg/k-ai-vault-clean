@@ -710,6 +710,7 @@ export type Services = {
   errors: ErrorPresentationService;
   platform: PlatformInfoService;
   qa: QualityAssuranceService;
+  release: ReleaseReadinessService;
   repositories: {
     vault: VaultRepository;
     compressionHistory: CompressionHistoryRepository;
@@ -1055,3 +1056,130 @@ export interface QualityAssuranceService {
 }
 
 
+
+/* ============================================================
+ * GOOGLE PLAY PRODUCTION READINESS (v1)
+ * ============================================================
+ * Contract used by the internal Release Readiness screen so the
+ * team can verify Play Store eligibility BEFORE cutting a build.
+ *
+ * Baseline release facts for v1:
+ *   - Distribution : Android App Bundle (AAB) via Play App Signing
+ *   - Min SDK      : 29 (Android 10)
+ *   - Target SDK   : latest required by Play at release time
+ *   - Data Safety  : on-device processing, no accounts, no ads,
+ *                    no analytics, no data sale
+ *   - Rollout      : Internal → Closed → (Open) → 10 → 25 → 50 → 100
+ * ============================================================ */
+
+export type ReleaseChannel =
+  | "internal"
+  | "closed"
+  | "open"
+  | "production_10"
+  | "production_25"
+  | "production_50"
+  | "production_100";
+
+export interface StoreListingAssets {
+  appName: string;
+  shortDescription: string;
+  fullDescription: string;
+  iconAssetPresent: boolean;
+  featureGraphicPresent: boolean;
+  phoneScreenshotCount: number;
+  tabletScreenshotCount: number;
+  privacyPolicyUrl: string;
+  supportEmail: string;
+  websiteUrl?: string;
+}
+
+export interface DataSafetyDeclaration {
+  processesMediaLocallyOnly: true;
+  hasUserAccounts: false;
+  collectsAnalytics: false;
+  usesAdvertisingId: false;
+  uploadsUserData: false;
+  sellsUserData: false;
+  /** Timestamp the declaration was last reviewed against real behavior. */
+  lastReviewedAt: string;
+}
+
+export type ReleaseCheckId =
+  | "aab_format"
+  | "play_app_signing"
+  | "target_sdk_current"
+  | "min_sdk_29"
+  | "store_listing_complete"
+  | "store_description_truthful"
+  | "data_safety_reviewed"
+  | "privacy_policy_published"
+  | "permissions_minimal"
+  | "no_placeholder_text"
+  | "no_debug_ui"
+  | "no_broken_navigation"
+  | "no_missing_icons"
+  | "performance_ok"
+  | "accessibility_ok"
+  | "security_ok"
+  | "crash_ready"
+  | "version_incremented"
+  | "release_notes_written";
+
+export type ReleaseCheckStatus = "pass" | "fail" | "warn" | "unknown";
+
+export interface ReleaseCheck {
+  id: ReleaseCheckId;
+  label: string;
+  status: ReleaseCheckStatus;
+  /** Friendly reason shown to the reviewer when status !== "pass". */
+  detail?: string;
+}
+
+export interface SemanticVersion {
+  major: number;
+  minor: number;
+  patch: number;
+  /** Play version code — must be strictly greater than the previous release. */
+  versionCode: number;
+}
+
+export interface ReleaseNotes {
+  version: SemanticVersion;
+  newFeatures: string[];
+  improvements: string[];
+  bugFixes: string[];
+  knownLimitations: string[];
+}
+
+export interface RolloutPlan {
+  channel: ReleaseChannel;
+  /** 0-100. Only meaningful on production_* channels. */
+  percent: number;
+  /** True when the previous stage's stability window has elapsed. */
+  previousStageStable: boolean;
+}
+
+export interface ReleaseReadinessReport {
+  generatedAt: string;
+  version: SemanticVersion;
+  listing: StoreListingAssets;
+  dataSafety: DataSafetyDeclaration;
+  checks: ReleaseCheck[];
+  notes: ReleaseNotes;
+  rollout: RolloutPlan;
+  /** True only when every check passes AND no critical bug is open. */
+  releasable: boolean;
+}
+
+/**
+ * Aggregates every Play-eligibility signal into a single honest report.
+ * Never fabricates green statuses; a check with no evidence returns
+ * "unknown" and blocks release.
+ */
+export interface ReleaseReadinessService {
+  getReport(): Promise<ReleaseReadinessReport>;
+  runCheck(id: ReleaseCheckId): Promise<ReleaseCheck>;
+  /** Immediately halt an in-progress staged rollout. */
+  pauseRollout(reason: string): Promise<ServiceResult<void>>;
+}
