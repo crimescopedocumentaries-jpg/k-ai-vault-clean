@@ -26,6 +26,7 @@ import { Route as SettingsChangelogRouteImport } from './routes/settings.changel
 import { Route as SettingsAboutRouteImport } from './routes/settings.about'
 import { Route as ScanResultsRouteImport } from './routes/scan.results'
 import { Route as CompressProgressRouteImport } from './routes/compress.progress'
+import { Route as AppVaultRouteImport } from './routes/_app.vault'
 import { Route as AppSettingsRouteImport } from './routes/_app.settings'
 import { Route as AppJobsRouteImport } from './routes/_app.jobs'
 import { Route as AppHomeRouteImport } from './routes/_app.home'
@@ -118,6 +119,11 @@ const CompressProgressRoute = CompressProgressRouteImport.update({
   path: '/compress/progress',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppVaultRoute = AppVaultRouteImport.update({
+  id: '/vault',
+  path: '/vault',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppSettingsRoute = AppSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
@@ -134,24 +140,24 @@ const AppHomeRoute = AppHomeRouteImport.update({
   getParentRoute: () => AppRoute,
 } as any)
 const AppVaultIndexRoute = AppVaultIndexRouteImport.update({
-  id: '/vault/',
-  path: '/vault/',
-  getParentRoute: () => AppRoute,
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppVaultRoute,
 } as any)
 const AppVaultVideosRoute = AppVaultVideosRouteImport.update({
-  id: '/vault/videos',
-  path: '/vault/videos',
-  getParentRoute: () => AppRoute,
+  id: '/videos',
+  path: '/videos',
+  getParentRoute: () => AppVaultRoute,
 } as any)
 const AppVaultPhotosRoute = AppVaultPhotosRouteImport.update({
-  id: '/vault/photos',
-  path: '/vault/photos',
-  getParentRoute: () => AppRoute,
+  id: '/photos',
+  path: '/photos',
+  getParentRoute: () => AppVaultRoute,
 } as any)
 const AppVaultDeletedRoute = AppVaultDeletedRouteImport.update({
-  id: '/vault/deleted',
-  path: '/vault/deleted',
-  getParentRoute: () => AppRoute,
+  id: '/deleted',
+  path: '/deleted',
+  getParentRoute: () => AppVaultRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -163,6 +169,7 @@ export interface FileRoutesByFullPath {
   '/home': typeof AppHomeRoute
   '/jobs': typeof AppJobsRoute
   '/settings': typeof AppSettingsRoute
+  '/vault': typeof AppVaultRouteWithChildren
   '/compress/progress': typeof CompressProgressRoute
   '/scan/results': typeof ScanResultsRoute
   '/settings/about': typeof SettingsAboutRoute
@@ -215,6 +222,7 @@ export interface FileRoutesById {
   '/_app/home': typeof AppHomeRoute
   '/_app/jobs': typeof AppJobsRoute
   '/_app/settings': typeof AppSettingsRoute
+  '/_app/vault': typeof AppVaultRouteWithChildren
   '/compress/progress': typeof CompressProgressRoute
   '/scan/results': typeof ScanResultsRoute
   '/settings/about': typeof SettingsAboutRoute
@@ -242,6 +250,7 @@ export interface FileRouteTypes {
     | '/home'
     | '/jobs'
     | '/settings'
+    | '/vault'
     | '/compress/progress'
     | '/scan/results'
     | '/settings/about'
@@ -293,6 +302,7 @@ export interface FileRouteTypes {
     | '/_app/home'
     | '/_app/jobs'
     | '/_app/settings'
+    | '/_app/vault'
     | '/compress/progress'
     | '/scan/results'
     | '/settings/about'
@@ -451,6 +461,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CompressProgressRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_app/vault': {
+      id: '/_app/vault'
+      path: '/vault'
+      fullPath: '/vault'
+      preLoaderRoute: typeof AppVaultRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/settings': {
       id: '/_app/settings'
       path: '/settings'
@@ -474,53 +491,65 @@ declare module '@tanstack/react-router' {
     }
     '/_app/vault/': {
       id: '/_app/vault/'
-      path: '/vault'
+      path: '/'
       fullPath: '/vault/'
       preLoaderRoute: typeof AppVaultIndexRouteImport
-      parentRoute: typeof AppRoute
+      parentRoute: typeof AppVaultRoute
     }
     '/_app/vault/videos': {
       id: '/_app/vault/videos'
-      path: '/vault/videos'
+      path: '/videos'
       fullPath: '/vault/videos'
       preLoaderRoute: typeof AppVaultVideosRouteImport
-      parentRoute: typeof AppRoute
+      parentRoute: typeof AppVaultRoute
     }
     '/_app/vault/photos': {
       id: '/_app/vault/photos'
-      path: '/vault/photos'
+      path: '/photos'
       fullPath: '/vault/photos'
       preLoaderRoute: typeof AppVaultPhotosRouteImport
-      parentRoute: typeof AppRoute
+      parentRoute: typeof AppVaultRoute
     }
     '/_app/vault/deleted': {
       id: '/_app/vault/deleted'
-      path: '/vault/deleted'
+      path: '/deleted'
       fullPath: '/vault/deleted'
       preLoaderRoute: typeof AppVaultDeletedRouteImport
-      parentRoute: typeof AppRoute
+      parentRoute: typeof AppVaultRoute
     }
   }
 }
 
-interface AppRouteChildren {
-  AppHomeRoute: typeof AppHomeRoute
-  AppJobsRoute: typeof AppJobsRoute
-  AppSettingsRoute: typeof AppSettingsRoute
+interface AppVaultRouteChildren {
   AppVaultDeletedRoute: typeof AppVaultDeletedRoute
   AppVaultPhotosRoute: typeof AppVaultPhotosRoute
   AppVaultVideosRoute: typeof AppVaultVideosRoute
   AppVaultIndexRoute: typeof AppVaultIndexRoute
 }
 
-const AppRouteChildren: AppRouteChildren = {
-  AppHomeRoute: AppHomeRoute,
-  AppJobsRoute: AppJobsRoute,
-  AppSettingsRoute: AppSettingsRoute,
+const AppVaultRouteChildren: AppVaultRouteChildren = {
   AppVaultDeletedRoute: AppVaultDeletedRoute,
   AppVaultPhotosRoute: AppVaultPhotosRoute,
   AppVaultVideosRoute: AppVaultVideosRoute,
   AppVaultIndexRoute: AppVaultIndexRoute,
+}
+
+const AppVaultRouteWithChildren = AppVaultRoute._addFileChildren(
+  AppVaultRouteChildren,
+)
+
+interface AppRouteChildren {
+  AppHomeRoute: typeof AppHomeRoute
+  AppJobsRoute: typeof AppJobsRoute
+  AppSettingsRoute: typeof AppSettingsRoute
+  AppVaultRoute: typeof AppVaultRouteWithChildren
+}
+
+const AppRouteChildren: AppRouteChildren = {
+  AppHomeRoute: AppHomeRoute,
+  AppJobsRoute: AppJobsRoute,
+  AppSettingsRoute: AppSettingsRoute,
+  AppVaultRoute: AppVaultRouteWithChildren,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
