@@ -1,0 +1,18 @@
+# K-Ai Storage Saver
+
+> Recover storage safely on Android. K-Ai compresses photos and videos while protected originals stay in the Safe Vault, so you can free space without losing quality.
+
+K-Ai Storage Saver is a mobile-first Android utility that scans device storage, recommends safe recoveries, compresses photos and videos, and keeps originals in a time-boxed Safe Vault so every action is reversible.
+
+## Pages
+
+- [Home](/): App splash and entry point.
+- [Welcome](/welcome): Introduction to K-Ai and how safe recovery works.
+- [Privacy Policy](/settings/privacy): How K-Ai handles data on-device.
+- [Terms of Use](/settings/terms): Terms governing use of the app.
+- [About K-Ai](/settings/about): About the project and its mission.
+
+## Optional
+
+- [Changelog](/settings/changelog): Release notes.
+- [Open source licenses](/settings/licenses): Third-party licenses.

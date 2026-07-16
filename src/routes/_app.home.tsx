@@ -50,7 +50,7 @@ function Home() {
   return (
     <div className="flex flex-1 flex-col">
       <AppBar
-        title="K-Ai"
+        title="K-Ai — Storage Dashboard"
         leading={
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary-container">
             <Symbol name="hard_drive_2" filled className="text-on-primary-container" size={20} />
