@@ -239,14 +239,143 @@ export type CompressionService = CompressionEngine;
 export type VideoCompressionService = CompressionEngine;
 
 
+/* ---------- Safe Vault Engine ----------
+ *
+ * The Safe Vault protects original media handled by K-Ai. Safety, recoverability
+ * and user trust always outrank storage recovery. Every stored original carries
+ * a cryptographic fingerprint used only for integrity checks — never tracking.
+ * All vault data stays on-device: no cloud sync, no uploads, no hidden copies.
+ */
+
+export type VaultRetention = 7 | 30 | 90 | "manual";
+
+export type VaultItemKind = "photo" | "video" | "document";
+
+/** How the original entered the vault. */
+export type VaultOrigin =
+  | "protected-before-compression"
+  | "deleted-through-app"
+  | "temporary-recovery-copy";
+
+export interface VaultItemDetail extends VaultItem {
+  fingerprint: string; // sha-256 of original bytes; integrity only
+  origin: VaultOrigin;
+  mimeType: string;
+  thumbnailUri?: string;
+  jobId?: string;
+}
+
+export type VaultHealthLevel = "healthy" | "attention" | "repair-recommended";
+
+export interface VaultHealthReport {
+  level: VaultHealthLevel;
+  explanation: string; // plain-language, no technical detail
+  missingCount: number;
+  corruptCount: number;
+  metadataDriftCount: number;
+  lastCheckedAt: string;
+}
+
+/** Estimate produced before storing new originals — powers Low-Storage guardrail. */
+export interface VaultSpaceEstimate {
+  requiredBytes: number;
+  availableBytes: number;
+  sufficient: boolean;
+  shortfallBytes: number;
+}
+
+export type VaultConflictResolution = "replace" | "keep-both" | "skip";
+
+export interface VaultRestoreRequest {
+  itemIds: string[];
+  /** Applied per-item when the destination file already exists. */
+  onConflict: VaultConflictResolution | "ask";
+  verify: boolean; // default true — never skip verification silently
+}
+
+export type VaultRestoreStage =
+  | "queued"
+  | "checking-destination"
+  | "awaiting-conflict-decision"
+  | "restoring"
+  | "verifying-readability"
+  | "verifying-integrity"
+  | "verifying-destination"
+  | "done"
+  | "skipped"
+  | "failed";
+
+export interface VaultRestoreProgress {
+  jobId: string;
+  itemId: string;
+  stage: VaultRestoreStage;
+  processed: number;
+  total: number;
+  verifiedCount: number;
+  failedCount: number;
+  skippedCount: number;
+  /** Present when stage === "awaiting-conflict-decision". */
+  conflict?: { itemId: string; destinationPath: string };
+}
+
+export type VaultSortKey =
+  | "recently-added"
+  | "oldest"
+  | "largest"
+  | "name";
+
+export type VaultFilter = "all" | "photos" | "videos" | "deleted-items";
+
+export interface VaultQuery {
+  search?: string; // filename or date fragment
+  filter?: VaultFilter;
+  sort?: VaultSortKey;
+}
+
 export interface SafeVaultService {
   getSummary(): Promise<VaultSummary>;
-  listContents(): Promise<VaultItem[]>;
-  storeOriginal(sourcePath: string): Promise<VaultItem>;
-  restore(itemIds: string[]): Promise<void>;
-  delete(itemIds: string[]): Promise<void>;
-  setRetentionDays(days: number): Promise<void>;
+  listContents(query?: VaultQuery): Promise<VaultItemDetail[]>;
+  getItem(itemId: string): Promise<VaultItemDetail>;
+
+  /** Store an original. Computes fingerprint and refuses duplicates. */
+  storeOriginal(
+    sourcePath: string,
+    origin: VaultOrigin,
+    jobId?: string,
+  ): Promise<ServiceResult<VaultItemDetail>>;
+
+  /** Pre-flight space check. UI must call before enqueueing large batches. */
+  estimateSpace(sourcePaths: string[]): Promise<VaultSpaceEstimate>;
+
+  /** Enqueue restore job. Progress stream carries conflict prompts. */
+  restore(request: VaultRestoreRequest): Promise<string>; // jobId
+  resolveConflict(
+    jobId: string,
+    itemId: string,
+    resolution: VaultConflictResolution,
+  ): Promise<void>;
+
+  /** Permanent, irreversible. UI MUST confirm explicitly before calling. */
+  delete(itemIds: string[]): Promise<ServiceResult<{ deletedCount: number }>>;
+
+  /** Undo the last restore/delete when still within the reversible window. */
+  undo(jobId: string): Promise<ServiceResult<{ reverted: boolean; reason?: string }>>;
+
+  /** Media preview URI — never mutates the original. */
+  getPreviewUri(itemId: string): Promise<string>;
+
+  setRetention(retention: VaultRetention): Promise<void>;
+  getRetention(): Promise<VaultRetention>;
+
+  /** Verify existence, fingerprints, metadata, references. Background-safe. */
+  runHealthCheck(): Promise<VaultHealthReport>;
+  getHealth(): Promise<VaultHealthReport>;
+  repair(): Promise<ServiceResult<VaultHealthReport>>;
+
+  subscribeRestore(jobId: string, cb: (p: VaultRestoreProgress) => void): () => void;
+  subscribeHealth(cb: (r: VaultHealthReport) => void): () => void;
 }
+
 
 export interface ZipArchiveService {
   createZip(items: string[], name: string): Promise<string>; // jobId
