@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { AppBar } from "@/components/AppBar";
 import { IconButton, Symbol } from "@/components/IconButton";
 
-export const Route = createFileRoute("/scan")({
+export const Route = createFileRoute("/scan/")({
   component: Scan,
 });
 

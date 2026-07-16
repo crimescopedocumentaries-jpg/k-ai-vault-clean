@@ -7,7 +7,7 @@ import { MButton } from "@/components/MButton";
 import type { CompressionQuality } from "@/services";
 import { formatBytes, formatDuration } from "@/lib/format";
 
-export const Route = createFileRoute("/compress")({
+export const Route = createFileRoute("/compress/")({
   component: CompressOptions,
   validateSearch: (s: Record<string, unknown>) => ({
     bucket: (s.bucket as string) ?? undefined,
