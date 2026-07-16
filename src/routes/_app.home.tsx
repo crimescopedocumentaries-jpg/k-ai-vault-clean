@@ -22,6 +22,21 @@ export const Route = createFileRoute("/_app/home")({
       { property: "og:url", content: "https://k-ai-vault-clean.lovable.app/home" },
     ],
     links: [{ rel: "canonical", href: "https://k-ai-vault-clean.lovable.app/home" }],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "SoftwareApplication",
+          name: "K-Ai Storage Saver",
+          applicationCategory: "UtilitiesApplication",
+          operatingSystem: "Android",
+          description:
+            "On-device AI compression for Android photos and videos with a Safe Vault for originals.",
+          offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+        }),
+      },
+    ],
   }),
 });
 

@@ -74,14 +74,15 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
           "width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no",
       },
       { name: "theme-color", content: "#232634" },
-      { title: "K-Ai Storage Saver" },
+      { title: "K-Ai Storage Saver — Recover storage and protect memories" },
       {
         name: "description",
         content:
           "Recover storage safely on Android. Compress photos and videos while protected originals stay in the Safe Vault.",
       },
       { name: "author", content: "K-Ai" },
-      { property: "og:title", content: "K-Ai Storage Saver" },
+      { property: "og:site_name", content: "K-Ai Storage Saver" },
+      { property: "og:title", content: "K-Ai Storage Saver — Recover storage and protect memories" },
       {
         property: "og:description",
         content:
@@ -89,10 +90,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "K-Ai Storage Saver" },
+      { name: "twitter:title", content: "K-Ai Storage Saver — Recover storage and protect memories" },
       { name: "twitter:description", content: "Recover storage safely on Android. Compress photos and videos while protected originals stay in the Safe Vault." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/fffad821-f537-4d13-a6f9-b1478300ecb4/id-preview-8786008c--941b3f40-c622-4190-b2df-d81b7e786645.lovable.app-1784173815373.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/fffad821-f537-4d13-a6f9-b1478300ecb4/id-preview-8786008c--941b3f40-c622-4190-b2df-d81b7e786645.lovable.app-1784173815373.png" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
@@ -102,7 +101,29 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,300..600,0..1,-25..0",
+        href: "https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,300..600,0..1,-25..0&display=swap",
+      },
+    ],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@graph": [
+            {
+              "@type": "Organization",
+              name: "K-Ai",
+              url: "https://k-ai-vault-clean.lovable.app",
+            },
+            {
+              "@type": "WebSite",
+              name: "K-Ai Storage Saver",
+              url: "https://k-ai-vault-clean.lovable.app",
+              description:
+                "Recover storage safely on Android. Compress photos and videos while protected originals stay in the Safe Vault.",
+            },
+          ],
+        }),
       },
     ],
   }),
