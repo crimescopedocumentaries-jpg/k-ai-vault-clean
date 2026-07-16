@@ -13,7 +13,9 @@ import { Route as WelcomeRouteImport } from './routes/welcome'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as ReviewRouteImport } from './routes/review'
 import { Route as PermissionsRouteImport } from './routes/permissions'
+import { Route as McpRouteImport } from './routes/mcp'
 import { Route as CompleteRouteImport } from './routes/complete'
+import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ScanIndexRouteImport } from './routes/scan.index'
@@ -31,10 +33,14 @@ import { Route as AppVaultRouteImport } from './routes/_app.vault'
 import { Route as AppSettingsRouteImport } from './routes/_app.settings'
 import { Route as AppJobsRouteImport } from './routes/_app.jobs'
 import { Route as AppHomeRouteImport } from './routes/_app.home'
+import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
+import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
 import { Route as AppVaultIndexRouteImport } from './routes/_app.vault.index'
 import { Route as AppVaultVideosRouteImport } from './routes/_app.vault.videos'
 import { Route as AppVaultPhotosRouteImport } from './routes/_app.vault.photos'
 import { Route as AppVaultDeletedRouteImport } from './routes/_app.vault.deleted'
+import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
+import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 
 const WelcomeRoute = WelcomeRouteImport.update({
   id: '/welcome',
@@ -56,9 +62,19 @@ const PermissionsRoute = PermissionsRouteImport.update({
   path: '/permissions',
   getParentRoute: () => rootRouteImport,
 } as any)
+const McpRoute = McpRouteImport.update({
+  id: '/mcp',
+  path: '/mcp',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CompleteRoute = CompleteRouteImport.update({
   id: '/complete',
   path: '/complete',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AppRoute = AppRouteImport.update({
@@ -145,6 +161,18 @@ const AppHomeRoute = AppHomeRouteImport.update({
   path: '/home',
   getParentRoute: () => AppRoute,
 } as any)
+const Char91DotwellKnownChar93OauthProtectedResourceRoute =
+  Char91DotwellKnownChar93OauthProtectedResourceRouteImport.update({
+    id: '/.well-known/oauth-protected-resource',
+    path: '/.well-known/oauth-protected-resource',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const Char91DotmcpChar93ListToolsRoute =
+  Char91DotmcpChar93ListToolsRouteImport.update({
+    id: '/.mcp/list-tools',
+    path: '/.mcp/list-tools',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AppVaultIndexRoute = AppVaultIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -165,14 +193,29 @@ const AppVaultDeletedRoute = AppVaultDeletedRouteImport.update({
   path: '/deleted',
   getParentRoute: () => AppVaultRoute,
 } as any)
+const Char91DotmcpChar93InvokeToolToolRoute =
+  Char91DotmcpChar93InvokeToolToolRouteImport.update({
+    id: '/.mcp/invoke-tool/$tool',
+    path: '/.mcp/invoke-tool/$tool',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const DotlovableOauthConsentRoute = DotlovableOauthConsentRouteImport.update({
+  id: '/.lovable/oauth/consent',
+  path: '/.lovable/oauth/consent',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
   '/complete': typeof CompleteRoute
+  '/mcp': typeof McpRoute
   '/permissions': typeof PermissionsRoute
   '/review': typeof ReviewRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/welcome': typeof WelcomeRoute
+  '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
+  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/home': typeof AppHomeRoute
   '/jobs': typeof AppJobsRoute
   '/settings': typeof AppSettingsRoute
@@ -188,6 +231,8 @@ export interface FileRoutesByFullPath {
   '/settings/terms': typeof SettingsTermsRoute
   '/compress/': typeof CompressIndexRoute
   '/scan/': typeof ScanIndexRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
+  '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/vault/deleted': typeof AppVaultDeletedRoute
   '/vault/photos': typeof AppVaultPhotosRoute
   '/vault/videos': typeof AppVaultVideosRoute
@@ -195,11 +240,15 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
   '/complete': typeof CompleteRoute
+  '/mcp': typeof McpRoute
   '/permissions': typeof PermissionsRoute
   '/review': typeof ReviewRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/welcome': typeof WelcomeRoute
+  '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
+  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/home': typeof AppHomeRoute
   '/jobs': typeof AppJobsRoute
   '/settings': typeof AppSettingsRoute
@@ -214,6 +263,8 @@ export interface FileRoutesByTo {
   '/settings/terms': typeof SettingsTermsRoute
   '/compress': typeof CompressIndexRoute
   '/scan': typeof ScanIndexRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
+  '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/vault/deleted': typeof AppVaultDeletedRoute
   '/vault/photos': typeof AppVaultPhotosRoute
   '/vault/videos': typeof AppVaultVideosRoute
@@ -223,11 +274,15 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_app': typeof AppRouteWithChildren
+  '/auth': typeof AuthRoute
   '/complete': typeof CompleteRoute
+  '/mcp': typeof McpRoute
   '/permissions': typeof PermissionsRoute
   '/review': typeof ReviewRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/welcome': typeof WelcomeRoute
+  '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
+  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/_app/home': typeof AppHomeRoute
   '/_app/jobs': typeof AppJobsRoute
   '/_app/settings': typeof AppSettingsRoute
@@ -243,6 +298,8 @@ export interface FileRoutesById {
   '/settings/terms': typeof SettingsTermsRoute
   '/compress/': typeof CompressIndexRoute
   '/scan/': typeof ScanIndexRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
+  '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/_app/vault/deleted': typeof AppVaultDeletedRoute
   '/_app/vault/photos': typeof AppVaultPhotosRoute
   '/_app/vault/videos': typeof AppVaultVideosRoute
@@ -252,11 +309,15 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/auth'
     | '/complete'
+    | '/mcp'
     | '/permissions'
     | '/review'
     | '/sitemap.xml'
     | '/welcome'
+    | '/.mcp/list-tools'
+    | '/.well-known/oauth-protected-resource'
     | '/home'
     | '/jobs'
     | '/settings'
@@ -272,6 +333,8 @@ export interface FileRouteTypes {
     | '/settings/terms'
     | '/compress/'
     | '/scan/'
+    | '/.lovable/oauth/consent'
+    | '/.mcp/invoke-tool/$tool'
     | '/vault/deleted'
     | '/vault/photos'
     | '/vault/videos'
@@ -279,11 +342,15 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/auth'
     | '/complete'
+    | '/mcp'
     | '/permissions'
     | '/review'
     | '/sitemap.xml'
     | '/welcome'
+    | '/.mcp/list-tools'
+    | '/.well-known/oauth-protected-resource'
     | '/home'
     | '/jobs'
     | '/settings'
@@ -298,6 +365,8 @@ export interface FileRouteTypes {
     | '/settings/terms'
     | '/compress'
     | '/scan'
+    | '/.lovable/oauth/consent'
+    | '/.mcp/invoke-tool/$tool'
     | '/vault/deleted'
     | '/vault/photos'
     | '/vault/videos'
@@ -306,11 +375,15 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_app'
+    | '/auth'
     | '/complete'
+    | '/mcp'
     | '/permissions'
     | '/review'
     | '/sitemap.xml'
     | '/welcome'
+    | '/.mcp/list-tools'
+    | '/.well-known/oauth-protected-resource'
     | '/_app/home'
     | '/_app/jobs'
     | '/_app/settings'
@@ -326,6 +399,8 @@ export interface FileRouteTypes {
     | '/settings/terms'
     | '/compress/'
     | '/scan/'
+    | '/.lovable/oauth/consent'
+    | '/.mcp/invoke-tool/$tool'
     | '/_app/vault/deleted'
     | '/_app/vault/photos'
     | '/_app/vault/videos'
@@ -335,11 +410,15 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppRoute: typeof AppRouteWithChildren
+  AuthRoute: typeof AuthRoute
   CompleteRoute: typeof CompleteRoute
+  McpRoute: typeof McpRoute
   PermissionsRoute: typeof PermissionsRoute
   ReviewRoute: typeof ReviewRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   WelcomeRoute: typeof WelcomeRoute
+  Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
+  Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   CompressProgressRoute: typeof CompressProgressRoute
   ScanResultsRoute: typeof ScanResultsRoute
   SettingsAboutRoute: typeof SettingsAboutRoute
@@ -351,6 +430,8 @@ export interface RootRouteChildren {
   SettingsTermsRoute: typeof SettingsTermsRoute
   CompressIndexRoute: typeof CompressIndexRoute
   ScanIndexRoute: typeof ScanIndexRoute
+  DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
+  Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -383,11 +464,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PermissionsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/mcp': {
+      id: '/mcp'
+      path: '/mcp'
+      fullPath: '/mcp'
+      preLoaderRoute: typeof McpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/complete': {
       id: '/complete'
       path: '/complete'
       fullPath: '/complete'
       preLoaderRoute: typeof CompleteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_app': {
@@ -509,6 +604,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppHomeRouteImport
       parentRoute: typeof AppRoute
     }
+    '/.well-known/oauth-protected-resource': {
+      id: '/.well-known/oauth-protected-resource'
+      path: '/.well-known/oauth-protected-resource'
+      fullPath: '/.well-known/oauth-protected-resource'
+      preLoaderRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/.mcp/list-tools': {
+      id: '/.mcp/list-tools'
+      path: '/.mcp/list-tools'
+      fullPath: '/.mcp/list-tools'
+      preLoaderRoute: typeof Char91DotmcpChar93ListToolsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_app/vault/': {
       id: '/_app/vault/'
       path: '/'
@@ -536,6 +645,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/vault/deleted'
       preLoaderRoute: typeof AppVaultDeletedRouteImport
       parentRoute: typeof AppVaultRoute
+    }
+    '/.mcp/invoke-tool/$tool': {
+      id: '/.mcp/invoke-tool/$tool'
+      path: '/.mcp/invoke-tool/$tool'
+      fullPath: '/.mcp/invoke-tool/$tool'
+      preLoaderRoute: typeof Char91DotmcpChar93InvokeToolToolRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/.lovable/oauth/consent': {
+      id: '/.lovable/oauth/consent'
+      path: '/.lovable/oauth/consent'
+      fullPath: '/.lovable/oauth/consent'
+      preLoaderRoute: typeof DotlovableOauthConsentRouteImport
+      parentRoute: typeof rootRouteImport
     }
   }
 }
@@ -577,11 +700,16 @@ const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRoute: AppRouteWithChildren,
+  AuthRoute: AuthRoute,
   CompleteRoute: CompleteRoute,
+  McpRoute: McpRoute,
   PermissionsRoute: PermissionsRoute,
   ReviewRoute: ReviewRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   WelcomeRoute: WelcomeRoute,
+  Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,
+  Char91DotwellKnownChar93OauthProtectedResourceRoute:
+    Char91DotwellKnownChar93OauthProtectedResourceRoute,
   CompressProgressRoute: CompressProgressRoute,
   ScanResultsRoute: ScanResultsRoute,
   SettingsAboutRoute: SettingsAboutRoute,
@@ -593,7 +721,19 @@ const rootRouteChildren: RootRouteChildren = {
   SettingsTermsRoute: SettingsTermsRoute,
   CompressIndexRoute: CompressIndexRoute,
   ScanIndexRoute: ScanIndexRoute,
+  DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
+  Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
