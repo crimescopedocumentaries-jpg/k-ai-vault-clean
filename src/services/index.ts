@@ -1,11 +1,25 @@
 /**
  * Service Interfaces for K-Ai Storage Saver
  *
+ * ┌──────────────────────────────────────────────────────────────┐
+ * │  HIGHEST AUTHORITY: /ENGINEERING_CONSTITUTION.md             │
+ * │                                                              │
+ * │  Mission:  Recover Storage Safely. Protect Memories.         │
+ * │  Rule:     Protecting memories > recovering storage.         │
+ * │            Reliability > speed. Simplicity > feature count.  │
+ * │            Honesty > marketing.                              │
+ * │                                                              │
+ * │  If any instruction conflicts with the Constitution,         │
+ * │  the Constitution wins. No implementation may violate its    │
+ * │  principles without a deliberate architectural review.       │
+ * └──────────────────────────────────────────────────────────────┘
+ *
  * IMPORTANT: These are ABSTRACT interfaces. They intentionally define shape
  * only. Android Studio will provide native implementations via JS bridge /
  * Capacitor / custom WebView bindings. The web frontend must never simulate
  * OS-level behavior beyond returning placeholder data for UI preview.
  */
+
 
 export interface StorageBreakdownEntry {
   category: "photos" | "videos" | "audio" | "documents" | "apps" | "other";
