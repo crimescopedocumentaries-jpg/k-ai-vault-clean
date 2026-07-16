@@ -14,8 +14,6 @@ import { Route as ReviewRouteImport } from './routes/review'
 import { Route as PermissionsRouteImport } from './routes/permissions'
 import { Route as CompleteRouteImport } from './routes/complete'
 import { Route as AppRouteImport } from './routes/_app'
-import { Route as ScanRouteRouteImport } from './routes/scan.route'
-import { Route as CompressRouteRouteImport } from './routes/compress.route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ScanIndexRouteImport } from './routes/scan.index'
 import { Route as CompressIndexRouteImport } from './routes/compress.index'
@@ -50,40 +48,30 @@ const AppRoute = AppRouteImport.update({
   id: '/_app',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ScanRouteRoute = ScanRouteRouteImport.update({
-  id: '/scan',
-  path: '/scan',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CompressRouteRoute = CompressRouteRouteImport.update({
-  id: '/compress',
-  path: '/compress',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ScanIndexRoute = ScanIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => ScanRouteRoute,
+  id: '/scan/',
+  path: '/scan/',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const CompressIndexRoute = CompressIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => CompressRouteRoute,
+  id: '/compress/',
+  path: '/compress/',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ScanResultsRoute = ScanResultsRouteImport.update({
-  id: '/results',
-  path: '/results',
-  getParentRoute: () => ScanRouteRoute,
+  id: '/scan/results',
+  path: '/scan/results',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const CompressProgressRoute = CompressProgressRouteImport.update({
-  id: '/progress',
-  path: '/progress',
-  getParentRoute: () => CompressRouteRoute,
+  id: '/compress/progress',
+  path: '/compress/progress',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AppVaultRoute = AppVaultRouteImport.update({
   id: '/vault',
@@ -108,8 +96,6 @@ const AppHomeRoute = AppHomeRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/compress': typeof CompressRouteRouteWithChildren
-  '/scan': typeof ScanRouteRouteWithChildren
   '/complete': typeof CompleteRoute
   '/permissions': typeof PermissionsRoute
   '/review': typeof ReviewRoute
@@ -141,8 +127,6 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/compress': typeof CompressRouteRouteWithChildren
-  '/scan': typeof ScanRouteRouteWithChildren
   '/_app': typeof AppRouteWithChildren
   '/complete': typeof CompleteRoute
   '/permissions': typeof PermissionsRoute
@@ -161,8 +145,6 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/compress'
-    | '/scan'
     | '/complete'
     | '/permissions'
     | '/review'
@@ -193,8 +175,6 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
-    | '/compress'
-    | '/scan'
     | '/_app'
     | '/complete'
     | '/permissions'
@@ -212,13 +192,15 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  CompressRouteRoute: typeof CompressRouteRouteWithChildren
-  ScanRouteRoute: typeof ScanRouteRouteWithChildren
   AppRoute: typeof AppRouteWithChildren
   CompleteRoute: typeof CompleteRoute
   PermissionsRoute: typeof PermissionsRoute
   ReviewRoute: typeof ReviewRoute
   WelcomeRoute: typeof WelcomeRoute
+  CompressProgressRoute: typeof CompressProgressRoute
+  ScanResultsRoute: typeof ScanResultsRoute
+  CompressIndexRoute: typeof CompressIndexRoute
+  ScanIndexRoute: typeof ScanIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -258,20 +240,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/scan': {
-      id: '/scan'
-      path: '/scan'
-      fullPath: '/scan'
-      preLoaderRoute: typeof ScanRouteRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/compress': {
-      id: '/compress'
-      path: '/compress'
-      fullPath: '/compress'
-      preLoaderRoute: typeof CompressRouteRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/': {
       id: '/'
       path: '/'
@@ -281,31 +249,31 @@ declare module '@tanstack/react-router' {
     }
     '/scan/': {
       id: '/scan/'
-      path: '/'
+      path: '/scan'
       fullPath: '/scan/'
       preLoaderRoute: typeof ScanIndexRouteImport
-      parentRoute: typeof ScanRouteRoute
+      parentRoute: typeof rootRouteImport
     }
     '/compress/': {
       id: '/compress/'
-      path: '/'
+      path: '/compress'
       fullPath: '/compress/'
       preLoaderRoute: typeof CompressIndexRouteImport
-      parentRoute: typeof CompressRouteRoute
+      parentRoute: typeof rootRouteImport
     }
     '/scan/results': {
       id: '/scan/results'
-      path: '/results'
+      path: '/scan/results'
       fullPath: '/scan/results'
       preLoaderRoute: typeof ScanResultsRouteImport
-      parentRoute: typeof ScanRouteRoute
+      parentRoute: typeof rootRouteImport
     }
     '/compress/progress': {
       id: '/compress/progress'
-      path: '/progress'
+      path: '/compress/progress'
       fullPath: '/compress/progress'
       preLoaderRoute: typeof CompressProgressRouteImport
-      parentRoute: typeof CompressRouteRoute
+      parentRoute: typeof rootRouteImport
     }
     '/_app/vault': {
       id: '/_app/vault'
@@ -338,34 +306,6 @@ declare module '@tanstack/react-router' {
   }
 }
 
-interface CompressRouteRouteChildren {
-  CompressProgressRoute: typeof CompressProgressRoute
-  CompressIndexRoute: typeof CompressIndexRoute
-}
-
-const CompressRouteRouteChildren: CompressRouteRouteChildren = {
-  CompressProgressRoute: CompressProgressRoute,
-  CompressIndexRoute: CompressIndexRoute,
-}
-
-const CompressRouteRouteWithChildren = CompressRouteRoute._addFileChildren(
-  CompressRouteRouteChildren,
-)
-
-interface ScanRouteRouteChildren {
-  ScanResultsRoute: typeof ScanResultsRoute
-  ScanIndexRoute: typeof ScanIndexRoute
-}
-
-const ScanRouteRouteChildren: ScanRouteRouteChildren = {
-  ScanResultsRoute: ScanResultsRoute,
-  ScanIndexRoute: ScanIndexRoute,
-}
-
-const ScanRouteRouteWithChildren = ScanRouteRoute._addFileChildren(
-  ScanRouteRouteChildren,
-)
-
 interface AppRouteChildren {
   AppHomeRoute: typeof AppHomeRoute
   AppJobsRoute: typeof AppJobsRoute
@@ -384,13 +324,15 @@ const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  CompressRouteRoute: CompressRouteRouteWithChildren,
-  ScanRouteRoute: ScanRouteRouteWithChildren,
   AppRoute: AppRouteWithChildren,
   CompleteRoute: CompleteRoute,
   PermissionsRoute: PermissionsRoute,
   ReviewRoute: ReviewRoute,
   WelcomeRoute: WelcomeRoute,
+  CompressProgressRoute: CompressProgressRoute,
+  ScanResultsRoute: ScanResultsRoute,
+  CompressIndexRoute: CompressIndexRoute,
+  ScanIndexRoute: ScanIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
