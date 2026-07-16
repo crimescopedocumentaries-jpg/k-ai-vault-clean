@@ -37,6 +37,33 @@ export function VaultDetail({
   const [selectMode, setSelectMode] = useState(false);
   const [preview, setPreview] = useState<VaultEntry | null>(null);
   const [confirmRestoreAll, setConfirmRestoreAll] = useState(false);
+  const [restoring, setRestoring] = useState<null | {
+    count: number;
+    bytes: number;
+    progress: number;
+    phase: "restoring" | "done";
+  }>(null);
+
+  const startRestore = (ids: string[]) => {
+    const chosen = items.filter((i) => ids.includes(i.id));
+    const bytes = chosen.reduce((a, b) => a + b.bytes, 0);
+    setRestoring({ count: chosen.length, bytes, progress: 0, phase: "restoring" });
+    const started = Date.now();
+    const duration = Math.min(3200, 900 + chosen.length * 120);
+    const tick = () => {
+      const p = Math.min(1, (Date.now() - started) / duration);
+      setRestoring((r) => (r ? { ...r, progress: p } : r));
+      if (p < 1) requestAnimationFrame(tick);
+      else {
+        setRestoring((r) => (r ? { ...r, phase: "done", progress: 1 } : r));
+        setTimeout(() => {
+          setRestoring(null);
+          clearSelection();
+        }, 1200);
+      }
+    };
+    requestAnimationFrame(tick);
+  };
 
   const totalBytes = items.reduce((a, b) => a + b.bytes, 0);
 
