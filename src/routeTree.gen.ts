@@ -26,10 +26,10 @@ import { Route as SettingsChangelogRouteImport } from './routes/settings.changel
 import { Route as SettingsAboutRouteImport } from './routes/settings.about'
 import { Route as ScanResultsRouteImport } from './routes/scan.results'
 import { Route as CompressProgressRouteImport } from './routes/compress.progress'
-import { Route as AppVaultRouteImport } from './routes/_app.vault'
 import { Route as AppSettingsRouteImport } from './routes/_app.settings'
 import { Route as AppJobsRouteImport } from './routes/_app.jobs'
 import { Route as AppHomeRouteImport } from './routes/_app.home'
+import { Route as AppVaultIndexRouteImport } from './routes/_app.vault.index'
 import { Route as AppVaultVideosRouteImport } from './routes/_app.vault.videos'
 import { Route as AppVaultPhotosRouteImport } from './routes/_app.vault.photos'
 import { Route as AppVaultDeletedRouteImport } from './routes/_app.vault.deleted'
@@ -118,11 +118,6 @@ const CompressProgressRoute = CompressProgressRouteImport.update({
   path: '/compress/progress',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AppVaultRoute = AppVaultRouteImport.update({
-  id: '/vault',
-  path: '/vault',
-  getParentRoute: () => AppRoute,
-} as any)
 const AppSettingsRoute = AppSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
@@ -138,20 +133,25 @@ const AppHomeRoute = AppHomeRouteImport.update({
   path: '/home',
   getParentRoute: () => AppRoute,
 } as any)
+const AppVaultIndexRoute = AppVaultIndexRouteImport.update({
+  id: '/vault/',
+  path: '/vault/',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppVaultVideosRoute = AppVaultVideosRouteImport.update({
-  id: '/videos',
-  path: '/videos',
-  getParentRoute: () => AppVaultRoute,
+  id: '/vault/videos',
+  path: '/vault/videos',
+  getParentRoute: () => AppRoute,
 } as any)
 const AppVaultPhotosRoute = AppVaultPhotosRouteImport.update({
-  id: '/photos',
-  path: '/photos',
-  getParentRoute: () => AppVaultRoute,
+  id: '/vault/photos',
+  path: '/vault/photos',
+  getParentRoute: () => AppRoute,
 } as any)
 const AppVaultDeletedRoute = AppVaultDeletedRouteImport.update({
-  id: '/deleted',
-  path: '/deleted',
-  getParentRoute: () => AppVaultRoute,
+  id: '/vault/deleted',
+  path: '/vault/deleted',
+  getParentRoute: () => AppRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -163,7 +163,6 @@ export interface FileRoutesByFullPath {
   '/home': typeof AppHomeRoute
   '/jobs': typeof AppJobsRoute
   '/settings': typeof AppSettingsRoute
-  '/vault': typeof AppVaultRouteWithChildren
   '/compress/progress': typeof CompressProgressRoute
   '/scan/results': typeof ScanResultsRoute
   '/settings/about': typeof SettingsAboutRoute
@@ -178,6 +177,7 @@ export interface FileRoutesByFullPath {
   '/vault/deleted': typeof AppVaultDeletedRoute
   '/vault/photos': typeof AppVaultPhotosRoute
   '/vault/videos': typeof AppVaultVideosRoute
+  '/vault/': typeof AppVaultIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -188,7 +188,6 @@ export interface FileRoutesByTo {
   '/home': typeof AppHomeRoute
   '/jobs': typeof AppJobsRoute
   '/settings': typeof AppSettingsRoute
-  '/vault': typeof AppVaultRouteWithChildren
   '/compress/progress': typeof CompressProgressRoute
   '/scan/results': typeof ScanResultsRoute
   '/settings/about': typeof SettingsAboutRoute
@@ -203,6 +202,7 @@ export interface FileRoutesByTo {
   '/vault/deleted': typeof AppVaultDeletedRoute
   '/vault/photos': typeof AppVaultPhotosRoute
   '/vault/videos': typeof AppVaultVideosRoute
+  '/vault': typeof AppVaultIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -215,7 +215,6 @@ export interface FileRoutesById {
   '/_app/home': typeof AppHomeRoute
   '/_app/jobs': typeof AppJobsRoute
   '/_app/settings': typeof AppSettingsRoute
-  '/_app/vault': typeof AppVaultRouteWithChildren
   '/compress/progress': typeof CompressProgressRoute
   '/scan/results': typeof ScanResultsRoute
   '/settings/about': typeof SettingsAboutRoute
@@ -230,6 +229,7 @@ export interface FileRoutesById {
   '/_app/vault/deleted': typeof AppVaultDeletedRoute
   '/_app/vault/photos': typeof AppVaultPhotosRoute
   '/_app/vault/videos': typeof AppVaultVideosRoute
+  '/_app/vault/': typeof AppVaultIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -242,7 +242,6 @@ export interface FileRouteTypes {
     | '/home'
     | '/jobs'
     | '/settings'
-    | '/vault'
     | '/compress/progress'
     | '/scan/results'
     | '/settings/about'
@@ -257,6 +256,7 @@ export interface FileRouteTypes {
     | '/vault/deleted'
     | '/vault/photos'
     | '/vault/videos'
+    | '/vault/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -267,7 +267,6 @@ export interface FileRouteTypes {
     | '/home'
     | '/jobs'
     | '/settings'
-    | '/vault'
     | '/compress/progress'
     | '/scan/results'
     | '/settings/about'
@@ -282,6 +281,7 @@ export interface FileRouteTypes {
     | '/vault/deleted'
     | '/vault/photos'
     | '/vault/videos'
+    | '/vault'
   id:
     | '__root__'
     | '/'
@@ -293,7 +293,6 @@ export interface FileRouteTypes {
     | '/_app/home'
     | '/_app/jobs'
     | '/_app/settings'
-    | '/_app/vault'
     | '/compress/progress'
     | '/scan/results'
     | '/settings/about'
@@ -308,6 +307,7 @@ export interface FileRouteTypes {
     | '/_app/vault/deleted'
     | '/_app/vault/photos'
     | '/_app/vault/videos'
+    | '/_app/vault/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -451,13 +451,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CompressProgressRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_app/vault': {
-      id: '/_app/vault'
-      path: '/vault'
-      fullPath: '/vault'
-      preLoaderRoute: typeof AppVaultRouteImport
-      parentRoute: typeof AppRoute
-    }
     '/_app/settings': {
       id: '/_app/settings'
       path: '/settings'
@@ -479,58 +472,55 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppHomeRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/vault/': {
+      id: '/_app/vault/'
+      path: '/vault'
+      fullPath: '/vault/'
+      preLoaderRoute: typeof AppVaultIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/vault/videos': {
       id: '/_app/vault/videos'
-      path: '/videos'
+      path: '/vault/videos'
       fullPath: '/vault/videos'
       preLoaderRoute: typeof AppVaultVideosRouteImport
-      parentRoute: typeof AppVaultRoute
+      parentRoute: typeof AppRoute
     }
     '/_app/vault/photos': {
       id: '/_app/vault/photos'
-      path: '/photos'
+      path: '/vault/photos'
       fullPath: '/vault/photos'
       preLoaderRoute: typeof AppVaultPhotosRouteImport
-      parentRoute: typeof AppVaultRoute
+      parentRoute: typeof AppRoute
     }
     '/_app/vault/deleted': {
       id: '/_app/vault/deleted'
-      path: '/deleted'
+      path: '/vault/deleted'
       fullPath: '/vault/deleted'
       preLoaderRoute: typeof AppVaultDeletedRouteImport
-      parentRoute: typeof AppVaultRoute
+      parentRoute: typeof AppRoute
     }
   }
 }
-
-interface AppVaultRouteChildren {
-  AppVaultDeletedRoute: typeof AppVaultDeletedRoute
-  AppVaultPhotosRoute: typeof AppVaultPhotosRoute
-  AppVaultVideosRoute: typeof AppVaultVideosRoute
-}
-
-const AppVaultRouteChildren: AppVaultRouteChildren = {
-  AppVaultDeletedRoute: AppVaultDeletedRoute,
-  AppVaultPhotosRoute: AppVaultPhotosRoute,
-  AppVaultVideosRoute: AppVaultVideosRoute,
-}
-
-const AppVaultRouteWithChildren = AppVaultRoute._addFileChildren(
-  AppVaultRouteChildren,
-)
 
 interface AppRouteChildren {
   AppHomeRoute: typeof AppHomeRoute
   AppJobsRoute: typeof AppJobsRoute
   AppSettingsRoute: typeof AppSettingsRoute
-  AppVaultRoute: typeof AppVaultRouteWithChildren
+  AppVaultDeletedRoute: typeof AppVaultDeletedRoute
+  AppVaultPhotosRoute: typeof AppVaultPhotosRoute
+  AppVaultVideosRoute: typeof AppVaultVideosRoute
+  AppVaultIndexRoute: typeof AppVaultIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
   AppHomeRoute: AppHomeRoute,
   AppJobsRoute: AppJobsRoute,
   AppSettingsRoute: AppSettingsRoute,
-  AppVaultRoute: AppVaultRouteWithChildren,
+  AppVaultDeletedRoute: AppVaultDeletedRoute,
+  AppVaultPhotosRoute: AppVaultPhotosRoute,
+  AppVaultVideosRoute: AppVaultVideosRoute,
+  AppVaultIndexRoute: AppVaultIndexRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
@@ -557,13 +547,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
