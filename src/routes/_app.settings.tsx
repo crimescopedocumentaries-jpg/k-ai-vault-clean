@@ -1,21 +1,24 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
 import { AppBar } from "@/components/AppBar";
 import { Card } from "@/components/Card";
 import { Symbol } from "@/components/IconButton";
 import type { CompressionQuality } from "@/services";
+import { useSettings, type ThemeMode } from "@/lib/settings";
 
 export const Route = createFileRoute("/_app/settings")({
   component: Settings,
 });
 
 function Settings() {
-  const [quality, setQuality] = useState<CompressionQuality>("balanced");
-  const [keepOriginals, setKeepOriginals] = useState(true);
-  const [vaultEnabled, setVaultEnabled] = useState(true);
-  const [notifications, setNotifications] = useState(true);
-  const [retention, setRetention] = useState(30);
-  const [theme, setTheme] = useState<"system" | "dark" | "light">("dark");
+  const { settings, update } = useSettings();
+  const {
+    compressionQuality: quality,
+    keepOriginals,
+    vaultEnabled,
+    notifications,
+    retentionDays: retention,
+    theme,
+  } = settings;
 
   return (
     <div className="flex flex-1 flex-col">
