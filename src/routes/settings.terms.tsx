@@ -4,6 +4,20 @@ import { APP_INFO } from "@/lib/appInfo";
 
 export const Route = createFileRoute("/settings/terms")({
   component: Terms,
+  head: () => ({
+    meta: [
+      { title: "Terms of Use — K-Ai Storage Saver" },
+      {
+        name: "description",
+        content:
+          "The terms that govern your use of the K-Ai Storage Saver app for Android.",
+      },
+      { property: "og:title", content: "Terms of Use — K-Ai Storage Saver" },
+      { property: "og:description", content: "Terms governing use of the K-Ai app." },
+      { property: "og:url", content: "https://k-ai-vault-clean.lovable.app/settings/terms" },
+    ],
+    links: [{ rel: "canonical", href: "https://k-ai-vault-clean.lovable.app/settings/terms" }],
+  }),
 });
 
 const plain = `${APP_INFO.name} — Terms of Use

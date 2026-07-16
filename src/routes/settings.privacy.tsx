@@ -4,6 +4,20 @@ import { APP_INFO } from "@/lib/appInfo";
 
 export const Route = createFileRoute("/settings/privacy")({
   component: PrivacyPolicy,
+  head: () => ({
+    meta: [
+      { title: "Privacy Policy — K-Ai Storage Saver" },
+      {
+        name: "description",
+        content:
+          "K-Ai processes everything on-device. No uploads, no accounts, no ads, no analytics. Read the full privacy policy.",
+      },
+      { property: "og:title", content: "Privacy Policy — K-Ai Storage Saver" },
+      { property: "og:description", content: "On-device only. No uploads, no accounts, no analytics." },
+      { property: "og:url", content: "https://k-ai-vault-clean.lovable.app/settings/privacy" },
+    ],
+    links: [{ rel: "canonical", href: "https://k-ai-vault-clean.lovable.app/settings/privacy" }],
+  }),
 });
 
 const plain = `${APP_INFO.name} — Privacy Policy

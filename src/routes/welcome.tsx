@@ -4,6 +4,20 @@ import { Symbol } from "@/components/IconButton";
 
 export const Route = createFileRoute("/welcome")({
   component: Welcome,
+  head: () => ({
+    meta: [
+      { title: "Welcome to K-Ai — Safe Android storage recovery" },
+      {
+        name: "description",
+        content:
+          "See how K-Ai recovers Android storage safely: on-device compression, Safe Vault for originals, and clear insights into what's using space.",
+      },
+      { property: "og:title", content: "Welcome to K-Ai — Safe Android storage recovery" },
+      { property: "og:description", content: "On-device compression with a Safe Vault so originals stay protected." },
+      { property: "og:url", content: "https://k-ai-vault-clean.lovable.app/welcome" },
+    ],
+    links: [{ rel: "canonical", href: "https://k-ai-vault-clean.lovable.app/welcome" }],
+  }),
 });
 
 const highlights = [

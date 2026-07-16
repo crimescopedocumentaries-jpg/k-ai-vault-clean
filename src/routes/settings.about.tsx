@@ -7,6 +7,20 @@ import { APP_INFO } from "@/lib/appInfo";
 
 export const Route = createFileRoute("/settings/about")({
   component: AboutKAi,
+  head: () => ({
+    meta: [
+      { title: "About K-Ai — Safe on-device storage recovery" },
+      {
+        name: "description",
+        content:
+          "About K-Ai Storage Saver: on-device AI compression, Safe Vault protection, and non-destructive recovery for Android.",
+      },
+      { property: "og:title", content: "About K-Ai — Safe on-device storage recovery" },
+      { property: "og:description", content: "On-device AI compression with Safe Vault protection." },
+      { property: "og:url", content: "https://k-ai-vault-clean.lovable.app/settings/about" },
+    ],
+    links: [{ rel: "canonical", href: "https://k-ai-vault-clean.lovable.app/settings/about" }],
+  }),
 });
 
 const features = [
