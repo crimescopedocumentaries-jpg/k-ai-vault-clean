@@ -390,7 +390,11 @@ export function VaultDetail({
               <MButton
                 full
                 leading={<Symbol name="restore" size={18} />}
-                onClick={() => setPreview(null)}
+                onClick={() => {
+                  const id = preview.id;
+                  setPreview(null);
+                  startRestore([id]);
+                }}
               >
                 Restore
               </MButton>
