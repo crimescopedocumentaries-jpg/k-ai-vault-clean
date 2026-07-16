@@ -317,7 +317,7 @@ export function VaultDetail({
               Delete
             </MButton>
             <MButton
-              onClick={clearSelection}
+              onClick={() => startRestore(Array.from(selected))}
               leading={<Symbol name="restore" size={18} />}
             >
               Restore
