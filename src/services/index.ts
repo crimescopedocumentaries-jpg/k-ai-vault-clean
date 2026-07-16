@@ -212,23 +212,32 @@ export interface StorageScannerService {
   listBucket(bucketId: string): Promise<MediaItem[]>;
 }
 
-export interface CompressionService {
-  estimate(request: CompressionRequest): Promise<{ savedBytes: number; etaSeconds: number }>;
-  compressPhotos(request: CompressionRequest): Promise<string>; // jobId
+/**
+ * Compression Engine contract (photos + videos share this shape).
+ *
+ * Pipeline per file: estimate → temp output → compress → verify integrity
+ * → verify readability → verify playback (video) → protect original in
+ * Safe Vault → replace active version → cleanup temp → update DB → refresh
+ * insights. Every job is transactional: any failure rolls back atomically.
+ * Files previously compressed by K-Ai must be detected and skipped to
+ * prevent cumulative quality loss.
+ */
+export interface CompressionEngine {
+  /** Pre-flight per-item estimate. Insignificant savings return recommendation="skip". */
+  estimate(request: CompressionRequest): Promise<CompressionEstimate[]>;
+  /** Enqueue job. Order: selected → large → recommended → remaining. */
+  start(request: CompressionRequest): Promise<string>; // jobId
   pause(jobId: string): Promise<void>;
   resume(jobId: string): Promise<void>;
   cancel(jobId: string): Promise<void>;
+  /** Restore originals from Safe Vault when technically possible. */
+  undo(jobId: string): Promise<ServiceResult<{ restoredCount: number }>>;
   subscribe(jobId: string, cb: (p: CompressionProgress) => void): () => void;
 }
 
-export interface VideoCompressionService {
-  estimate(request: CompressionRequest): Promise<{ savedBytes: number; etaSeconds: number }>;
-  compressVideos(request: CompressionRequest): Promise<string>;
-  pause(jobId: string): Promise<void>;
-  resume(jobId: string): Promise<void>;
-  cancel(jobId: string): Promise<void>;
-  subscribe(jobId: string, cb: (p: CompressionProgress) => void): () => void;
-}
+export type CompressionService = CompressionEngine;
+export type VideoCompressionService = CompressionEngine;
+
 
 export interface SafeVaultService {
   getSummary(): Promise<VaultSummary>;
