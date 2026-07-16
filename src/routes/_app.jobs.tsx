@@ -84,26 +84,41 @@ function JobCard({ job }: { job: Job }) {
             </span>
           </div>
           <p className="mt-0.5 text-[12px] text-on-surface-variant">
-            {job.itemCount.toLocaleString()} items • {job.finishedAt ?? job.startedAt}
+            {job.itemCount.toLocaleString()} items · {job.finishedAt ?? job.startedAt}
           </p>
 
           {job.status === "running" && (
-            <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-surface-3">
-              <div
-                className="h-full rounded-full bg-primary transition-[width]"
-                style={{ width: `${job.progress}%` }}
-              />
-            </div>
+            <>
+              <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-surface-3">
+                <div
+                  className="h-full rounded-full bg-primary transition-[width]"
+                  style={{ width: `${job.progress}%` }}
+                />
+              </div>
+              <div className="mt-1.5 flex items-center justify-between text-[11px] text-on-surface-variant">
+                <span className="tabular-nums">{job.progress}% complete</span>
+                <span className="inline-flex items-center gap-1">
+                  <Symbol name="schedule" size={12} />
+                  About {Math.max(1, Math.round((100 - job.progress) / 12))} min left
+                </span>
+              </div>
+              {job.bytesSaved && (
+                <p className="mt-1 text-[11px] text-on-surface-variant">
+                  Recovered so far · {formatBytes(job.bytesSaved)}
+                </p>
+              )}
+            </>
           )}
 
           {job.status === "completed" && job.verification && (
-            <div className="mt-3 flex items-center gap-2">
+            <div className="mt-3 flex flex-wrap items-center gap-2">
               <VerificationBadge kind={job.verification} />
               {job.bytesSaved && (
                 <span className="text-[12px] text-on-surface-variant">
                   Recovered {formatBytes(job.bytesSaved)}
                 </span>
               )}
+              <span className="text-[12px] text-on-surface-variant">· Took 6 min</span>
             </div>
           )}
 

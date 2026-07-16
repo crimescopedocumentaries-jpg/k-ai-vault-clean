@@ -42,6 +42,7 @@ function Settings() {
         <Section title="Compression">
           <SelectRow
             label="Compression quality"
+            description="Higher quality keeps more detail. Maximum savings recovers the most space."
             value={quality}
             onChange={(v) => setQuality(v as CompressionQuality)}
             options={[
@@ -52,7 +53,7 @@ function Settings() {
           />
           <SwitchRow
             label="Keep originals"
-            description="Store originals until you delete them yourself."
+            description="Originals stay protected in Safe Vault until the retention period ends."
             value={keepOriginals}
             onChange={setKeepOriginals}
           />
@@ -61,12 +62,13 @@ function Settings() {
         <Section title="Safe Vault">
           <SwitchRow
             label="Enable Safe Vault"
-            description="Protects originals for a retention period."
+            description="Protects every original so you can restore it at full quality anytime."
             value={vaultEnabled}
             onChange={setVaultEnabled}
           />
           <SelectRow
             label="Retention period"
+            description="Originals are permanently deleted only after this period ends."
             value={String(retention)}
             onChange={(v) => setRetention(Number(v))}
             options={[
@@ -81,12 +83,13 @@ function Settings() {
         <Section title="Notifications & appearance">
           <SwitchRow
             label="Notifications"
-            description="Get notified when a long job finishes."
+            description="You'll only hear from us when a long job finishes or needs attention."
             value={notifications}
             onChange={setNotifications}
           />
           <SelectRow
             label="Theme"
+            description="System matches your device. Choose Light or Dark to override."
             value={theme}
             onChange={(v) => setTheme(v as typeof theme)}
             options={[
@@ -162,11 +165,13 @@ function SwitchRow({
 
 function SelectRow({
   label,
+  description,
   value,
   options,
   onChange,
 }: {
   label: string;
+  description?: string;
   value: string;
   options: { value: string; label: string }[];
   onChange: (v: string) => void;
@@ -175,6 +180,9 @@ function SelectRow({
     <label className="flex items-center gap-4 p-4">
       <div className="min-w-0 flex-1">
         <p className="text-[14px] font-medium text-on-surface">{label}</p>
+        {description && (
+          <p className="mt-0.5 text-[12px] leading-snug text-on-surface-variant">{description}</p>
+        )}
       </div>
       <div className="relative">
         <select

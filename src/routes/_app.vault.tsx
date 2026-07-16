@@ -74,10 +74,11 @@ function Vault() {
         </div>
 
         <Card className="flex gap-3 bg-surface-2">
-          <Symbol name="info" className="mt-0.5 text-on-surface-variant" size={20} />
+          <Symbol name="shield" filled className="mt-0.5 text-tertiary" size={20} />
           <p className="text-[12px] leading-relaxed text-on-surface-variant">
-            Items are permanently removed after the retention period. You can restore an original
-            at full quality at any time before then.
+            Original files remain protected until the retention period expires.
+            <br />
+            Nothing is permanently deleted before then.
           </p>
         </Card>
       </div>

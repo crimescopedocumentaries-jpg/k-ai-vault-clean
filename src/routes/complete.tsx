@@ -35,7 +35,7 @@ function Complete() {
         <Card padded={false} className="grid w-full grid-cols-3 divide-x divide-border">
           <Stat label="Recovered" value={formatBytes(saved)} />
           <Stat label="Files" value="128" />
-          <Stat label="Verified" value="128" />
+          <Stat label="Duration" value="6 min" />
         </Card>
 
         <Card className="flex w-full items-center gap-3 bg-tertiary-container text-left">
@@ -47,10 +47,10 @@ function Complete() {
 
         <div className="mt-auto flex w-full flex-col gap-2">
           <MButton size="lg" full onClick={() => navigate({ to: "/home" })}>
-            Back to home
+            Done
           </MButton>
           <MButton variant="text" full onClick={() => navigate({ to: "/vault" })}>
-            View originals in Safe Vault
+            Open Safe Vault
           </MButton>
         </div>
       </div>
