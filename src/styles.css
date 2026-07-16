@@ -168,10 +168,10 @@
   transition:
     background-color 150ms ease,
     transform 150ms ease;
-}
 
-@utility ripple:active {
-  transform: scale(0.98);
+  &:active {
+    transform: scale(0.98);
+  }
 }
 
 @utility no-scrollbar {
