@@ -918,3 +918,138 @@ export interface ErrorPresentationService {
   present(error: unknown, context?: { operation?: string }): FriendlyError;
 }
 
+/* ============================================================
+ * ANDROID STUDIO IMPLEMENTATION GUIDE (v1)
+ * ============================================================
+ * These types describe the NATIVE implementation contract the
+ * Android app must satisfy. They are surfaced to the UI so the
+ * About / Diagnostics screens can display truthful build info
+ * without hard-coding strings.
+ *
+ *   Platform     : Android 10+ (minSdk 29)
+ *   Language     : Kotlin
+ *   UI           : Jetpack Compose + Material 3
+ *   Architecture : MVVM + Repository + Clean Architecture
+ *   DI           : Hilt
+ *   Async        : Coroutines + StateFlow / SharedFlow
+ *   Persistence  : Room (versioned migrations)
+ *   Background   : WorkManager + Foreground Services
+ *   Media        : MediaStore + Scoped Storage
+ * ============================================================ */
+
+export type BuildFlavor = "debug" | "release";
+
+/** Feature modules the Android app is organized into. */
+export type FeatureModule =
+  | "app"
+  | "core"
+  | "common"
+  | "ui"
+  | "storage"
+  | "compression"
+  | "safevault"
+  | "jobcenter"
+  | "settings"
+  | "notifications"
+  | "database"
+  | "permissions";
+
+export interface AndroidBuildInfo {
+  minSdk: 29;
+  targetSdk: number;
+  compileSdk: number;
+  versionName: string;
+  versionCode: number;
+  flavor: BuildFlavor;
+  /** True when the current build was shrunk (R8) — release only. */
+  minified: boolean;
+  modules: FeatureModule[];
+}
+
+/**
+ * Read-only build & platform facts. MUST NOT expose stack traces,
+ * file paths, or secrets.
+ */
+export interface PlatformInfoService {
+  getBuildInfo(): Promise<AndroidBuildInfo>;
+  /** Human-readable Android release, e.g. "Android 14 (API 34)". */
+  getOsRelease(): Promise<string>;
+}
+
+/* ============================================================
+ * TESTING & QUALITY ASSURANCE (v1)
+ * ============================================================
+ * Release blockers (ALL must be false to ship):
+ *   - Original media can be lost
+ *   - Compression corrupts files
+ *   - Restore fails
+ *   - Application crashes repeatedly
+ *   - Critical accessibility issues
+ *   - Critical security issues
+ * ============================================================ */
+
+export type TestSuiteId =
+  | "unit"
+  | "integration"
+  | "ui"
+  | "compression"
+  | "safe_vault"
+  | "database"
+  | "job_center"
+  | "performance"
+  | "battery"
+  | "low_storage"
+  | "memory"
+  | "stress"
+  | "interruption"
+  | "security"
+  | "accessibility"
+  | "compatibility"
+  | "regression";
+
+export type TestSuiteStatus = "passing" | "failing" | "skipped" | "not_run";
+
+export interface TestSuiteReport {
+  id: TestSuiteId;
+  status: TestSuiteStatus;
+  total: number;
+  passed: number;
+  failed: number;
+  /** Coverage 0-100. Only meaningful for the unit suite (goal: ≥80). */
+  coveragePercent?: number;
+  lastRunAt?: string;
+}
+
+export type BugSeverity = "critical" | "blocking" | "major" | "minor";
+
+export interface ReleaseBlockerCheck {
+  id:
+    | "originals_safe"
+    | "compression_lossless_or_reversible"
+    | "restore_reliable"
+    | "crash_free"
+    | "accessibility_ok"
+    | "security_ok";
+  label: string;
+  passing: boolean;
+  detail?: string;
+}
+
+export interface QualityReport {
+  generatedAt: string;
+  suites: TestSuiteReport[];
+  blockers: ReleaseBlockerCheck[];
+  /** True only when every blocker passes. */
+  releasable: boolean;
+}
+
+/**
+ * Single honest view of release readiness. Never fabricates green
+ * statuses — a missing suite reports "not_run".
+ */
+export interface QualityAssuranceService {
+  getReport(): Promise<QualityReport>;
+  getSuite(id: TestSuiteId): Promise<TestSuiteReport>;
+}
+
+
