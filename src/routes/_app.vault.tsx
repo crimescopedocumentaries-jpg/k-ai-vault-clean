@@ -74,18 +74,25 @@ function Vault() {
         <div className="flex flex-col gap-2">
           <h2 className="px-1 text-[15px] font-medium text-on-surface">Contents</h2>
           {groups.map((g) => (
-            <Card key={g.key} padded={false} className="flex items-center gap-4 p-4">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-surface-2">
-                <Symbol name={g.icon} className="text-primary" size={22} />
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-[14px] font-medium text-on-surface">{g.label}</p>
-                <p className="text-[12px] text-on-surface-variant">
-                  {g.count.toLocaleString()} items
-                </p>
-              </div>
-              <Symbol name="chevron_right" className="text-on-surface-variant" />
-            </Card>
+            <Link
+              key={g.key}
+              to={g.to}
+              className="ripple block rounded-2xl focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              aria-label={`${g.label}, ${g.count.toLocaleString()} items, ${formatBytes(g.bytes)} protected`}
+            >
+              <Card padded={false} className="flex items-center gap-4 p-4">
+                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-surface-2">
+                  <Symbol name={g.icon} className="text-primary" size={22} />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[14px] font-medium text-on-surface">{g.label}</p>
+                  <p className="text-[12px] text-on-surface-variant">
+                    {g.count.toLocaleString()} items • {formatBytes(g.bytes)} protected
+                  </p>
+                </div>
+                <Symbol name="chevron_right" className="text-on-surface-variant" />
+              </Card>
+            </Link>
           ))}
         </div>
 
