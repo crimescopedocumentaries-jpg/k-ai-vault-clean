@@ -1,21 +1,24 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
 import { AppBar } from "@/components/AppBar";
 import { Card } from "@/components/Card";
 import { Symbol } from "@/components/IconButton";
 import type { CompressionQuality } from "@/services";
+import { useSettings, type ThemeMode } from "@/lib/settings";
 
 export const Route = createFileRoute("/_app/settings")({
   component: Settings,
 });
 
 function Settings() {
-  const [quality, setQuality] = useState<CompressionQuality>("balanced");
-  const [keepOriginals, setKeepOriginals] = useState(true);
-  const [vaultEnabled, setVaultEnabled] = useState(true);
-  const [notifications, setNotifications] = useState(true);
-  const [retention, setRetention] = useState(30);
-  const [theme, setTheme] = useState<"system" | "dark" | "light">("dark");
+  const { settings, update } = useSettings();
+  const {
+    compressionQuality: quality,
+    keepOriginals,
+    vaultEnabled,
+    notifications,
+    retentionDays: retention,
+    theme,
+  } = settings;
 
   return (
     <div className="flex flex-1 flex-col">
@@ -34,7 +37,7 @@ function Settings() {
             </div>
           </div>
           <div className="mt-4 grid grid-cols-2 gap-3">
-            <Meta label="Vault" value="Enabled" />
+            <Meta label="Vault" value={vaultEnabled ? `${retention}-day retention` : "Disabled"} />
             <Meta label="App version" value="1.0.0" />
           </div>
         </Card>
@@ -44,7 +47,7 @@ function Settings() {
             label="Compression quality"
             description="Higher quality keeps more detail. Maximum savings recovers the most space."
             value={quality}
-            onChange={(v) => setQuality(v as CompressionQuality)}
+            onChange={(v) => update("compressionQuality", v as CompressionQuality)}
             options={[
               { value: "high", label: "High quality" },
               { value: "balanced", label: "Balanced" },
@@ -55,7 +58,7 @@ function Settings() {
             label="Keep originals"
             description="Originals stay protected in Safe Vault until the retention period ends."
             value={keepOriginals}
-            onChange={setKeepOriginals}
+            onChange={(v) => update("keepOriginals", v)}
           />
         </Section>
 
@@ -64,13 +67,13 @@ function Settings() {
             label="Enable Safe Vault"
             description="Protects every original so you can restore it at full quality anytime."
             value={vaultEnabled}
-            onChange={setVaultEnabled}
+            onChange={(v) => update("vaultEnabled", v)}
           />
           <SelectRow
             label="Retention period"
             description="Originals are permanently deleted only after this period ends."
             value={String(retention)}
-            onChange={(v) => setRetention(Number(v))}
+            onChange={(v) => update("retentionDays", Number(v))}
             options={[
               { value: "7", label: "7 days" },
               { value: "30", label: "30 days" },
@@ -85,13 +88,13 @@ function Settings() {
             label="Notifications"
             description="You'll only hear from us when a long job finishes or needs attention."
             value={notifications}
-            onChange={setNotifications}
+            onChange={(v) => update("notifications", v)}
           />
           <SelectRow
             label="Theme"
             description="System matches your device. Choose Light or Dark to override."
             value={theme}
-            onChange={(v) => setTheme(v as typeof theme)}
+            onChange={(v) => update("theme", v as ThemeMode)}
             options={[
               { value: "system", label: "Follow system" },
               { value: "dark", label: "Dark" },

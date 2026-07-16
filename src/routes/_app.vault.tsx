@@ -5,6 +5,7 @@ import { MButton } from "@/components/MButton";
 import { Symbol } from "@/components/IconButton";
 import { previewVault, previewVaultBytes } from "@/services/previewData";
 import { formatBytes } from "@/lib/format";
+import { useSettings } from "@/lib/settings";
 
 export const Route = createFileRoute("/_app/vault")({
   component: Vault,
@@ -38,6 +39,7 @@ const groups = [
 ] as const;
 
 function Vault() {
+  const { settings } = useSettings();
   return (
     <div className="flex flex-1 flex-col">
       <AppBar title="Safe Vault" large subtitle="Originals we’re keeping safe for you." />
@@ -62,7 +64,7 @@ function Vault() {
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            <VaultMeta label="Retention" value={`${previewVault.retentionDays} days`} icon="event_repeat" />
+            <VaultMeta label="Retention" value={`${settings.retentionDays} days`} icon="event_repeat" />
             <VaultMeta label="Last change" value={previewVault.lastUpdated} icon="update" />
           </div>
 
