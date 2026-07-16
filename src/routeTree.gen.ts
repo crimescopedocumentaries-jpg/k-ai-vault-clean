@@ -17,6 +17,13 @@ import { Route as AppRouteImport } from './routes/_app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ScanIndexRouteImport } from './routes/scan.index'
 import { Route as CompressIndexRouteImport } from './routes/compress.index'
+import { Route as SettingsTermsRouteImport } from './routes/settings.terms'
+import { Route as SettingsReportBugRouteImport } from './routes/settings.report-bug'
+import { Route as SettingsPrivacyRouteImport } from './routes/settings.privacy'
+import { Route as SettingsLicensesRouteImport } from './routes/settings.licenses'
+import { Route as SettingsFeedbackRouteImport } from './routes/settings.feedback'
+import { Route as SettingsChangelogRouteImport } from './routes/settings.changelog'
+import { Route as SettingsAboutRouteImport } from './routes/settings.about'
 import { Route as ScanResultsRouteImport } from './routes/scan.results'
 import { Route as CompressProgressRouteImport } from './routes/compress.progress'
 import { Route as AppVaultRouteImport } from './routes/_app.vault'
@@ -64,6 +71,41 @@ const ScanIndexRoute = ScanIndexRouteImport.update({
 const CompressIndexRoute = CompressIndexRouteImport.update({
   id: '/compress/',
   path: '/compress/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsTermsRoute = SettingsTermsRouteImport.update({
+  id: '/settings/terms',
+  path: '/settings/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsReportBugRoute = SettingsReportBugRouteImport.update({
+  id: '/settings/report-bug',
+  path: '/settings/report-bug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsPrivacyRoute = SettingsPrivacyRouteImport.update({
+  id: '/settings/privacy',
+  path: '/settings/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsLicensesRoute = SettingsLicensesRouteImport.update({
+  id: '/settings/licenses',
+  path: '/settings/licenses',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsFeedbackRoute = SettingsFeedbackRouteImport.update({
+  id: '/settings/feedback',
+  path: '/settings/feedback',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsChangelogRoute = SettingsChangelogRouteImport.update({
+  id: '/settings/changelog',
+  path: '/settings/changelog',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsAboutRoute = SettingsAboutRouteImport.update({
+  id: '/settings/about',
+  path: '/settings/about',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ScanResultsRoute = ScanResultsRouteImport.update({
@@ -124,6 +166,13 @@ export interface FileRoutesByFullPath {
   '/vault': typeof AppVaultRouteWithChildren
   '/compress/progress': typeof CompressProgressRoute
   '/scan/results': typeof ScanResultsRoute
+  '/settings/about': typeof SettingsAboutRoute
+  '/settings/changelog': typeof SettingsChangelogRoute
+  '/settings/feedback': typeof SettingsFeedbackRoute
+  '/settings/licenses': typeof SettingsLicensesRoute
+  '/settings/privacy': typeof SettingsPrivacyRoute
+  '/settings/report-bug': typeof SettingsReportBugRoute
+  '/settings/terms': typeof SettingsTermsRoute
   '/compress/': typeof CompressIndexRoute
   '/scan/': typeof ScanIndexRoute
   '/vault/deleted': typeof AppVaultDeletedRoute
@@ -142,6 +191,13 @@ export interface FileRoutesByTo {
   '/vault': typeof AppVaultRouteWithChildren
   '/compress/progress': typeof CompressProgressRoute
   '/scan/results': typeof ScanResultsRoute
+  '/settings/about': typeof SettingsAboutRoute
+  '/settings/changelog': typeof SettingsChangelogRoute
+  '/settings/feedback': typeof SettingsFeedbackRoute
+  '/settings/licenses': typeof SettingsLicensesRoute
+  '/settings/privacy': typeof SettingsPrivacyRoute
+  '/settings/report-bug': typeof SettingsReportBugRoute
+  '/settings/terms': typeof SettingsTermsRoute
   '/compress': typeof CompressIndexRoute
   '/scan': typeof ScanIndexRoute
   '/vault/deleted': typeof AppVaultDeletedRoute
@@ -162,6 +218,13 @@ export interface FileRoutesById {
   '/_app/vault': typeof AppVaultRouteWithChildren
   '/compress/progress': typeof CompressProgressRoute
   '/scan/results': typeof ScanResultsRoute
+  '/settings/about': typeof SettingsAboutRoute
+  '/settings/changelog': typeof SettingsChangelogRoute
+  '/settings/feedback': typeof SettingsFeedbackRoute
+  '/settings/licenses': typeof SettingsLicensesRoute
+  '/settings/privacy': typeof SettingsPrivacyRoute
+  '/settings/report-bug': typeof SettingsReportBugRoute
+  '/settings/terms': typeof SettingsTermsRoute
   '/compress/': typeof CompressIndexRoute
   '/scan/': typeof ScanIndexRoute
   '/_app/vault/deleted': typeof AppVaultDeletedRoute
@@ -182,6 +245,13 @@ export interface FileRouteTypes {
     | '/vault'
     | '/compress/progress'
     | '/scan/results'
+    | '/settings/about'
+    | '/settings/changelog'
+    | '/settings/feedback'
+    | '/settings/licenses'
+    | '/settings/privacy'
+    | '/settings/report-bug'
+    | '/settings/terms'
     | '/compress/'
     | '/scan/'
     | '/vault/deleted'
@@ -200,6 +270,13 @@ export interface FileRouteTypes {
     | '/vault'
     | '/compress/progress'
     | '/scan/results'
+    | '/settings/about'
+    | '/settings/changelog'
+    | '/settings/feedback'
+    | '/settings/licenses'
+    | '/settings/privacy'
+    | '/settings/report-bug'
+    | '/settings/terms'
     | '/compress'
     | '/scan'
     | '/vault/deleted'
@@ -219,6 +296,13 @@ export interface FileRouteTypes {
     | '/_app/vault'
     | '/compress/progress'
     | '/scan/results'
+    | '/settings/about'
+    | '/settings/changelog'
+    | '/settings/feedback'
+    | '/settings/licenses'
+    | '/settings/privacy'
+    | '/settings/report-bug'
+    | '/settings/terms'
     | '/compress/'
     | '/scan/'
     | '/_app/vault/deleted'
@@ -235,6 +319,13 @@ export interface RootRouteChildren {
   WelcomeRoute: typeof WelcomeRoute
   CompressProgressRoute: typeof CompressProgressRoute
   ScanResultsRoute: typeof ScanResultsRoute
+  SettingsAboutRoute: typeof SettingsAboutRoute
+  SettingsChangelogRoute: typeof SettingsChangelogRoute
+  SettingsFeedbackRoute: typeof SettingsFeedbackRoute
+  SettingsLicensesRoute: typeof SettingsLicensesRoute
+  SettingsPrivacyRoute: typeof SettingsPrivacyRoute
+  SettingsReportBugRoute: typeof SettingsReportBugRoute
+  SettingsTermsRoute: typeof SettingsTermsRoute
   CompressIndexRoute: typeof CompressIndexRoute
   ScanIndexRoute: typeof ScanIndexRoute
 }
@@ -295,6 +386,55 @@ declare module '@tanstack/react-router' {
       path: '/compress'
       fullPath: '/compress/'
       preLoaderRoute: typeof CompressIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings/terms': {
+      id: '/settings/terms'
+      path: '/settings/terms'
+      fullPath: '/settings/terms'
+      preLoaderRoute: typeof SettingsTermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings/report-bug': {
+      id: '/settings/report-bug'
+      path: '/settings/report-bug'
+      fullPath: '/settings/report-bug'
+      preLoaderRoute: typeof SettingsReportBugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings/privacy': {
+      id: '/settings/privacy'
+      path: '/settings/privacy'
+      fullPath: '/settings/privacy'
+      preLoaderRoute: typeof SettingsPrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings/licenses': {
+      id: '/settings/licenses'
+      path: '/settings/licenses'
+      fullPath: '/settings/licenses'
+      preLoaderRoute: typeof SettingsLicensesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings/feedback': {
+      id: '/settings/feedback'
+      path: '/settings/feedback'
+      fullPath: '/settings/feedback'
+      preLoaderRoute: typeof SettingsFeedbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings/changelog': {
+      id: '/settings/changelog'
+      path: '/settings/changelog'
+      fullPath: '/settings/changelog'
+      preLoaderRoute: typeof SettingsChangelogRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings/about': {
+      id: '/settings/about'
+      path: '/settings/about'
+      fullPath: '/settings/about'
+      preLoaderRoute: typeof SettingsAboutRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/scan/results': {
@@ -404,6 +544,13 @@ const rootRouteChildren: RootRouteChildren = {
   WelcomeRoute: WelcomeRoute,
   CompressProgressRoute: CompressProgressRoute,
   ScanResultsRoute: ScanResultsRoute,
+  SettingsAboutRoute: SettingsAboutRoute,
+  SettingsChangelogRoute: SettingsChangelogRoute,
+  SettingsFeedbackRoute: SettingsFeedbackRoute,
+  SettingsLicensesRoute: SettingsLicensesRoute,
+  SettingsPrivacyRoute: SettingsPrivacyRoute,
+  SettingsReportBugRoute: SettingsReportBugRoute,
+  SettingsTermsRoute: SettingsTermsRoute,
   CompressIndexRoute: CompressIndexRoute,
   ScanIndexRoute: ScanIndexRoute,
 }

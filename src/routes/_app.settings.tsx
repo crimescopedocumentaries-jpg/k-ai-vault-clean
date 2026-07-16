@@ -1,9 +1,10 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppBar } from "@/components/AppBar";
 import { Card } from "@/components/Card";
 import { Symbol } from "@/components/IconButton";
 import type { CompressionQuality } from "@/services";
 import { useSettings, type ThemeMode } from "@/lib/settings";
+import { APP_INFO } from "@/lib/appInfo";
 
 export const Route = createFileRoute("/_app/settings")({
   component: Settings,
@@ -38,7 +39,7 @@ function Settings() {
           </div>
           <div className="mt-4 grid grid-cols-2 gap-3">
             <Meta label="Vault" value={vaultEnabled ? `${retention}-day retention` : "Disabled"} />
-            <Meta label="App version" value="1.0.0" />
+            <Meta label="App version" value={`${APP_INFO.version} (${APP_INFO.buildNumber})`} />
           </div>
         </Card>
 
@@ -104,9 +105,9 @@ function Settings() {
         </Section>
 
         <Section title="About">
-          <LinkRow label="Privacy policy" icon="policy" />
-          <LinkRow label="Terms of use" icon="description" />
-          <LinkRow label="About K-Ai" icon="info" />
+          <LinkRow to="/settings/privacy" label="Privacy Policy" icon="policy" />
+          <LinkRow to="/settings/terms" label="Terms of Use" icon="gavel" />
+          <LinkRow to="/settings/about" label="About K-Ai" icon="info" />
         </Section>
       </div>
     </div>
@@ -209,13 +210,13 @@ function SelectRow({
   );
 }
 
-function LinkRow({ label, icon }: { label: string; icon: string }) {
+function LinkRow({ to, label, icon }: { to: string; label: string; icon: string }) {
   return (
-    <button className="ripple flex w-full items-center gap-3 p-4 text-left">
+    <Link to={to} className="ripple flex w-full items-center gap-3 p-4 text-left">
       <Symbol name={icon} className="text-on-surface-variant" size={20} />
       <span className="flex-1 text-[14px] font-medium text-on-surface">{label}</span>
       <Symbol name="chevron_right" className="text-on-surface-variant" size={20} />
-    </button>
+    </Link>
   );
 }
 
