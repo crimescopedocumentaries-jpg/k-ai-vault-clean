@@ -40,6 +40,7 @@ import { Route as AppVaultVideosRouteImport } from './routes/_app.vault.videos'
 import { Route as AppVaultPhotosRouteImport } from './routes/_app.vault.photos'
 import { Route as AppVaultDeletedRouteImport } from './routes/_app.vault.deleted'
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
+import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 
 const WelcomeRoute = WelcomeRouteImport.update({
   id: '/welcome',
@@ -198,6 +199,11 @@ const Char91DotmcpChar93InvokeToolToolRoute =
     path: '/.mcp/invoke-tool/$tool',
     getParentRoute: () => rootRouteImport,
   } as any)
+const DotlovableOauthConsentRoute = DotlovableOauthConsentRouteImport.update({
+  id: '/.lovable/oauth/consent',
+  path: '/.lovable/oauth/consent',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -225,6 +231,7 @@ export interface FileRoutesByFullPath {
   '/settings/terms': typeof SettingsTermsRoute
   '/compress/': typeof CompressIndexRoute
   '/scan/': typeof ScanIndexRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/vault/deleted': typeof AppVaultDeletedRoute
   '/vault/photos': typeof AppVaultPhotosRoute
@@ -256,6 +263,7 @@ export interface FileRoutesByTo {
   '/settings/terms': typeof SettingsTermsRoute
   '/compress': typeof CompressIndexRoute
   '/scan': typeof ScanIndexRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/vault/deleted': typeof AppVaultDeletedRoute
   '/vault/photos': typeof AppVaultPhotosRoute
@@ -290,6 +298,7 @@ export interface FileRoutesById {
   '/settings/terms': typeof SettingsTermsRoute
   '/compress/': typeof CompressIndexRoute
   '/scan/': typeof ScanIndexRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/_app/vault/deleted': typeof AppVaultDeletedRoute
   '/_app/vault/photos': typeof AppVaultPhotosRoute
@@ -324,6 +333,7 @@ export interface FileRouteTypes {
     | '/settings/terms'
     | '/compress/'
     | '/scan/'
+    | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/vault/deleted'
     | '/vault/photos'
@@ -355,6 +365,7 @@ export interface FileRouteTypes {
     | '/settings/terms'
     | '/compress'
     | '/scan'
+    | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/vault/deleted'
     | '/vault/photos'
@@ -388,6 +399,7 @@ export interface FileRouteTypes {
     | '/settings/terms'
     | '/compress/'
     | '/scan/'
+    | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/_app/vault/deleted'
     | '/_app/vault/photos'
@@ -418,6 +430,7 @@ export interface RootRouteChildren {
   SettingsTermsRoute: typeof SettingsTermsRoute
   CompressIndexRoute: typeof CompressIndexRoute
   ScanIndexRoute: typeof ScanIndexRoute
+  DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
 }
 
@@ -640,6 +653,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof Char91DotmcpChar93InvokeToolToolRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/.lovable/oauth/consent': {
+      id: '/.lovable/oauth/consent'
+      path: '/.lovable/oauth/consent'
+      fullPath: '/.lovable/oauth/consent'
+      preLoaderRoute: typeof DotlovableOauthConsentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -701,6 +721,7 @@ const rootRouteChildren: RootRouteChildren = {
   SettingsTermsRoute: SettingsTermsRoute,
   CompressIndexRoute: CompressIndexRoute,
   ScanIndexRoute: ScanIndexRoute,
+  DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
 }
 export const routeTree = rootRouteImport
