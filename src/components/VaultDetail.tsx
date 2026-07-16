@@ -465,6 +465,69 @@ export function VaultDetail({
             </div>
           </div>
         </div>
+      {restoring && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-live="polite"
+          aria-label={restoring.phase === "done" ? "Restore complete" : "Restoring items"}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-6 backdrop-blur-sm"
+        >
+          <div className="w-full max-w-sm rounded-3xl bg-surface p-6 text-center shadow-card">
+            <div className="relative mx-auto mb-5 h-24 w-24">
+              <svg viewBox="0 0 100 100" className="h-full w-full -rotate-90">
+                <circle
+                  cx="50"
+                  cy="50"
+                  r="44"
+                  fill="none"
+                  strokeWidth="8"
+                  className="stroke-surface-2"
+                />
+                <circle
+                  cx="50"
+                  cy="50"
+                  r="44"
+                  fill="none"
+                  strokeWidth="8"
+                  strokeLinecap="round"
+                  strokeDasharray={2 * Math.PI * 44}
+                  strokeDashoffset={2 * Math.PI * 44 * (1 - restoring.progress)}
+                  className="stroke-primary transition-[stroke-dashoffset] duration-100 ease-linear"
+                />
+              </svg>
+              <div className="absolute inset-0 flex items-center justify-center">
+                {restoring.phase === "done" ? (
+                  <Symbol
+                    name="check_circle"
+                    filled
+                    size={44}
+                    className="text-primary animate-in zoom-in duration-300"
+                  />
+                ) : (
+                  <Symbol
+                    name="restore"
+                    size={36}
+                    className="text-primary animate-pulse"
+                  />
+                )}
+              </div>
+            </div>
+            <h2 className="text-[18px] font-medium text-on-surface">
+              {restoring.phase === "done" ? "Restored" : "Restoring…"}
+            </h2>
+            <p className="mt-1 text-[13px] text-on-surface-variant">
+              {restoring.phase === "done"
+                ? `${restoring.count} item${restoring.count === 1 ? "" : "s"} returned to your gallery`
+                : `${restoring.count} item${restoring.count === 1 ? "" : "s"} • ${formatBytes(restoring.bytes)}`}
+            </p>
+            {restoring.phase === "restoring" && (
+              <p className="mt-3 text-[12px] tabular-nums text-on-surface-variant">
+                {Math.round(restoring.progress * 100)}%
+              </p>
+            )}
+          </div>
+        </div>
       )}
     </div>
   );
