@@ -425,7 +425,10 @@ export function VaultDetail({
                 full
                 disabled={selected.size === 0}
                 leading={<Symbol name="check" size={18} />}
-                onClick={() => setConfirmRestoreAll(false)}
+                onClick={() => {
+                  setConfirmRestoreAll(false);
+                  startRestore(Array.from(selected));
+                }}
               >
                 Restore selected ({selected.size})
               </MButton>
@@ -433,7 +436,10 @@ export function VaultDetail({
                 variant="tonal"
                 full
                 leading={<Symbol name="image" size={18} />}
-                onClick={() => setConfirmRestoreAll(false)}
+                onClick={() => {
+                  setConfirmRestoreAll(false);
+                  startRestore(items.filter((i) => i.kind === "photo").map((i) => i.id));
+                }}
               >
                 Restore all photos
               </MButton>
@@ -441,7 +447,10 @@ export function VaultDetail({
                 variant="tonal"
                 full
                 leading={<Symbol name="movie" size={18} />}
-                onClick={() => setConfirmRestoreAll(false)}
+                onClick={() => {
+                  setConfirmRestoreAll(false);
+                  startRestore(items.filter((i) => i.kind === "video").map((i) => i.id));
+                }}
               >
                 Restore all videos
               </MButton>
@@ -455,6 +464,7 @@ export function VaultDetail({
                   )
                     return;
                   setConfirmRestoreAll(false);
+                  startRestore(items.map((i) => i.id));
                 }}
               >
                 Restore everything
