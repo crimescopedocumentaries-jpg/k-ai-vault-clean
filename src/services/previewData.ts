@@ -106,6 +106,83 @@ export const previewVault: VaultSummary = {
   },
 };
 
+export const previewVaultBytes = {
+  photos: 3.8 * 1024 ** 3,
+  videos: 1.4 * 1024 ** 3,
+  deletedThroughApp: 820 * 1024 ** 2,
+};
+
+export type VaultEntry = {
+  id: string;
+  name: string;
+  bytes: number;
+  protectedAt: string;
+  protectedAtDays: number;
+  kind: "photo" | "video" | "zip";
+  durationSec?: number;
+  deletedAt?: string;
+  retentionDaysLeft?: number;
+};
+
+const day = (n: number) => {
+  if (n === 0) return "Today";
+  if (n === 1) return "Yesterday";
+  return `${n} days ago`;
+};
+
+export const previewProtectedPhotos: VaultEntry[] = Array.from({ length: 24 }).map((_, i) => ({
+  id: `pp-${i}`,
+  name: `IMG_${20240100 + i}.jpg`,
+  bytes: (6 + (i % 7) * 2.3) * 1024 * 1024,
+  protectedAt: day(i % 14),
+  protectedAtDays: i % 14,
+  kind: "photo",
+}));
+
+export const previewProtectedVideos: VaultEntry[] = Array.from({ length: 16 }).map((_, i) => ({
+  id: `pv-${i}`,
+  name: `VID_${20240100 + i}.mp4`,
+  bytes: (120 + (i % 5) * 55) * 1024 * 1024,
+  protectedAt: day((i + 1) % 20),
+  protectedAtDays: (i + 1) % 20,
+  kind: "video",
+  durationSec: 30 + (i % 8) * 45,
+}));
+
+export const previewDeletedItems: VaultEntry[] = [
+  ...Array.from({ length: 8 }).map<VaultEntry>((_, i) => ({
+    id: `dp-${i}`,
+    name: `IMG_${20231200 + i}.jpg`,
+    bytes: (4 + i) * 1024 * 1024,
+    protectedAt: day(20 + i),
+    protectedAtDays: 20 + i,
+    deletedAt: day(i + 2),
+    retentionDaysLeft: 30 - (i + 2),
+    kind: "photo",
+  })),
+  ...Array.from({ length: 8 }).map<VaultEntry>((_, i) => ({
+    id: `dv-${i}`,
+    name: `VID_${20231200 + i}.mp4`,
+    bytes: (80 + i * 20) * 1024 * 1024,
+    protectedAt: day(15 + i),
+    protectedAtDays: 15 + i,
+    deletedAt: day(i + 4),
+    retentionDaysLeft: 30 - (i + 4),
+    kind: "video",
+    durationSec: 60 + i * 20,
+  })),
+  ...Array.from({ length: 4 }).map<VaultEntry>((_, i) => ({
+    id: `dz-${i}`,
+    name: `Archive_${i + 1}.zip`,
+    bytes: (200 + i * 40) * 1024 * 1024,
+    protectedAt: day(10 + i),
+    protectedAtDays: 10 + i,
+    deletedAt: day(i + 1),
+    retentionDaysLeft: 30 - (i + 1),
+    kind: "zip",
+  })),
+];
+
 export const previewJobs: Job[] = [
   {
     id: "j-1",
