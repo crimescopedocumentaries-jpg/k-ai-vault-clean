@@ -710,6 +710,7 @@ export type Services = {
   errors: ErrorPresentationService;
   platform: PlatformInfoService;
   qa: QualityAssuranceService;
+  release: ReleaseReadinessService;
   repositories: {
     vault: VaultRepository;
     compressionHistory: CompressionHistoryRepository;
