@@ -102,7 +102,7 @@ export function LegalPage({
 
         <div className="pt-2">
           <MButton
-            variant="outline"
+            variant="outlined"
             full
             leading={<Symbol name="arrow_back" size={18} />}
             onClick={() => navigate({ to: "/settings" })}
