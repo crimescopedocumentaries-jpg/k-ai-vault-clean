@@ -127,15 +127,30 @@ export function VaultDetail({
           </IconButton>
         }
         trailing={
-          <IconButton
-            label={selectMode ? "Cancel selection" : "Select"}
-            onClick={() => {
-              if (selectMode) clearSelection();
-              else setSelectMode(true);
-            }}
-          >
-            <Symbol name={selectMode ? "close" : "check_box_outline_blank"} />
-          </IconButton>
+          <div className="flex items-center">
+            {selectMode && (
+              <IconButton
+                label={selected.size === visible.length ? "Clear selection" : "Select all"}
+                onClick={() => {
+                  if (selected.size === visible.length) setSelected(new Set());
+                  else setSelected(new Set(visible.map((i) => i.id)));
+                }}
+              >
+                <Symbol
+                  name={selected.size === visible.length ? "deselect" : "select_all"}
+                />
+              </IconButton>
+            )}
+            <IconButton
+              label={selectMode ? "Cancel selection" : "Select"}
+              onClick={() => {
+                if (selectMode) clearSelection();
+                else setSelectMode(true);
+              }}
+            >
+              <Symbol name={selectMode ? "close" : "check_box_outline_blank"} />
+            </IconButton>
+          </div>
         }
       />
 
