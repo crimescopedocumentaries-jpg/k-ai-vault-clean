@@ -43,6 +43,41 @@ export interface MediaItem {
   selected?: boolean;
 }
 
+export type PhotoFormat = "jpeg" | "jpg" | "png" | "webp" | "heif" | "heic";
+export type VideoFormat = "mp4" | "mov" | "3gp" | "mkv" | "webm" | "mpeg";
+export type SupportedFormat = PhotoFormat | VideoFormat | "zip";
+
+export const SUPPORTED_PHOTO_FORMATS: PhotoFormat[] = [
+  "jpeg",
+  "jpg",
+  "png",
+  "webp",
+  "heif",
+  "heic",
+];
+export const SUPPORTED_VIDEO_FORMATS: VideoFormat[] = [
+  "mp4",
+  "mov",
+  "3gp",
+  "mkv",
+  "webm",
+  "mpeg",
+];
+
+export interface MediaItem {
+  id: string;
+  name: string;
+  path: string;
+  bytes: number;
+  mimeType: string;
+  format?: SupportedFormat;
+  takenAt?: string;
+  thumbnailUri?: string;
+  selected?: boolean;
+  /** True when K-Ai has already compressed this file. Never compress twice. */
+  previouslyCompressed?: boolean;
+}
+
 export type CompressionQuality = "high" | "balanced" | "maximum";
 
 export interface CompressionRequest {
@@ -50,16 +85,51 @@ export interface CompressionRequest {
   quality: CompressionQuality;
   keepOriginals: boolean;
   moveOriginalsToVault: boolean;
+  /** Preserve GPS location, timestamps, orientation when supported. */
+  preserveMetadata: boolean;
 }
+
+/** Per-file pre-flight estimate produced by the Intelligent Decision Engine. */
+export interface CompressionEstimate {
+  itemId: string;
+  currentBytes: number;
+  expectedBytes: number;
+  expectedSavedBytes: number;
+  expectedQuality: "excellent" | "good" | "acceptable";
+  etaSeconds: number;
+  /** When savings are insignificant, engine reports skip + user-facing reason. */
+  recommendation: "compress" | "skip";
+  reason?: string;
+}
+
+export type CompressionStage =
+  | "queued"
+  | "estimating"
+  | "compressing"
+  | "verifying-integrity"
+  | "verifying-readability"
+  | "verifying-playback"
+  | "protecting-original"
+  | "replacing"
+  | "cleanup"
+  | "done"
+  | "rolled-back"
+  | "skipped";
 
 export interface CompressionProgress {
   jobId: string;
   processed: number;
   total: number;
+  skipped: number;
+  failed: number;
   currentFile?: string;
+  stage: CompressionStage;
   bytesSaved: number;
   etaSeconds: number;
+  /** Verified successful files only. Never fake progress. */
+  verifiedCount: number;
 }
+
 
 export interface VaultItem {
   id: string;
@@ -142,23 +212,32 @@ export interface StorageScannerService {
   listBucket(bucketId: string): Promise<MediaItem[]>;
 }
 
-export interface CompressionService {
-  estimate(request: CompressionRequest): Promise<{ savedBytes: number; etaSeconds: number }>;
-  compressPhotos(request: CompressionRequest): Promise<string>; // jobId
+/**
+ * Compression Engine contract (photos + videos share this shape).
+ *
+ * Pipeline per file: estimate → temp output → compress → verify integrity
+ * → verify readability → verify playback (video) → protect original in
+ * Safe Vault → replace active version → cleanup temp → update DB → refresh
+ * insights. Every job is transactional: any failure rolls back atomically.
+ * Files previously compressed by K-Ai must be detected and skipped to
+ * prevent cumulative quality loss.
+ */
+export interface CompressionEngine {
+  /** Pre-flight per-item estimate. Insignificant savings return recommendation="skip". */
+  estimate(request: CompressionRequest): Promise<CompressionEstimate[]>;
+  /** Enqueue job. Order: selected → large → recommended → remaining. */
+  start(request: CompressionRequest): Promise<string>; // jobId
   pause(jobId: string): Promise<void>;
   resume(jobId: string): Promise<void>;
   cancel(jobId: string): Promise<void>;
+  /** Restore originals from Safe Vault when technically possible. */
+  undo(jobId: string): Promise<ServiceResult<{ restoredCount: number }>>;
   subscribe(jobId: string, cb: (p: CompressionProgress) => void): () => void;
 }
 
-export interface VideoCompressionService {
-  estimate(request: CompressionRequest): Promise<{ savedBytes: number; etaSeconds: number }>;
-  compressVideos(request: CompressionRequest): Promise<string>;
-  pause(jobId: string): Promise<void>;
-  resume(jobId: string): Promise<void>;
-  cancel(jobId: string): Promise<void>;
-  subscribe(jobId: string, cb: (p: CompressionProgress) => void): () => void;
-}
+export type CompressionService = CompressionEngine;
+export type VideoCompressionService = CompressionEngine;
+
 
 export interface SafeVaultService {
   getSummary(): Promise<VaultSummary>;
