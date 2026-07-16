@@ -704,6 +704,10 @@ export type Services = {
   insights: StorageInsightsService;
   health: HealthMonitorService;
   db: DatabaseService;
+  privacy: PrivacyService;
+  integrity: IntegrityService;
+  audit: AuditService;
+  errors: ErrorPresentationService;
   repositories: {
     vault: VaultRepository;
     compressionHistory: CompressionHistoryRepository;
@@ -714,3 +718,203 @@ export type Services = {
     appState: ApplicationStateRepository;
   };
 };
+
+/* ============================================================
+ * SECURITY & PRIVACY SPECIFICATION (v1)
+ * ============================================================
+ * Version 1 operates ENTIRELY OFFLINE.
+ *
+ *   - No accounts, no login, no registration.
+ *   - No cloud storage, no remote processing.
+ *   - No analytics, telemetry, or hidden network traffic.
+ *   - No uploads of media, metadata, storage info, preferences,
+ *     or job history — ever.
+ *   - Users own all media. The app only touches files the user
+ *     explicitly selects.
+ *
+ * These interfaces exist so the UI can:
+ *   1. Explain each permission BEFORE requesting it.
+ *   2. Show a transparent privacy posture to the user.
+ *   3. Verify integrity on startup and repair when safe.
+ *   4. Present friendly error messages (never stack traces).
+ *
+ * The native layer MUST enforce these contracts. The UI
+ * layer MUST NOT bypass them.
+ * ============================================================ */
+
+/** The complete set of permissions v1 is ever allowed to request. */
+export type AppPermission =
+  | "media.read"          // read user-selected photos & videos
+  | "notifications.post"  // progress for long-running jobs
+  | "storage.saf";        // Scoped Storage / SAF fallback
+
+export type PermissionState =
+  | "granted"
+  | "denied"
+  | "denied_permanently"
+  | "not_requested"
+  | "not_applicable";
+
+/**
+ * Human-readable rationale shown to the user BEFORE a system
+ * permission prompt appears. Every field is REQUIRED.
+ */
+export interface PermissionRationale {
+  permission: AppPermission;
+  /** Plain-language reason ("So we can scan the photos you pick"). */
+  whyNeeded: string;
+  /** What the app will do with the access. */
+  howUsed: string;
+  /** How the user can revoke it later (in-app or system settings). */
+  howToRevoke: string;
+  /** True when the app can still work (in reduced form) without it. */
+  optional: boolean;
+}
+
+/* ---------- Privacy posture (surfaced in Settings > Privacy) ---------- */
+
+export interface PrivacyPosture {
+  offlineOnly: true;
+  requiresAccount: false;
+  collectsAnalytics: false;
+  collectsTelemetry: false;
+  performsBackgroundSync: false;
+  uploadsMedia: false;
+  uploadsMetadata: false;
+  /** Bytes ever sent over the network by this app in v1. Always 0. */
+  bytesTransmitted: 0;
+  /** Timestamp the posture was last self-verified. */
+  lastVerifiedAt: string;
+}
+
+/**
+ * PrivacyService exposes the app's privacy contract to the UI so
+ * screens like Settings > Privacy can show honest, verifiable claims
+ * instead of marketing copy.
+ */
+export interface PrivacyService {
+  getPosture(): Promise<PrivacyPosture>;
+  /**
+   * Returns the rationale for a permission. The UI MUST call this
+   * and display the result BEFORE invoking permissions.request().
+   */
+  rationaleFor(permission: AppPermission): Promise<PermissionRationale>;
+  /**
+   * Returns a plain-language summary of every data category the app
+   * retains locally, so the user can make an informed retention choice.
+   */
+  describeRetainedData(): Promise<Array<{
+    category: "vault" | "compression_history" | "scan_cache" | "jobs" | "settings" | "insights";
+    description: string;
+    userControllable: boolean;
+  }>>;
+  /** Delete everything the app has stored locally, except user originals. */
+  purgeAllLocalData(): Promise<ServiceResult<void>>;
+}
+
+/* ---------- Startup integrity checks ---------- */
+
+export type IntegrityCheckId =
+  | "database"
+  | "vault"
+  | "pending_jobs"
+  | "application_state";
+
+export type IntegrityCheckStatus =
+  | "ok"
+  | "repaired"
+  | "needs_user_action"
+  | "failed";
+
+export interface IntegrityCheckResult {
+  id: IntegrityCheckId;
+  status: IntegrityCheckStatus;
+  /** Friendly message shown to the user when action is required. */
+  userMessage?: string;
+  /** Optional next step for the UI to guide the user through. */
+  guidance?: {
+    actionLabel: string;
+    actionId: "open_vault" | "resume_jobs" | "reset_state" | "contact_support";
+  };
+}
+
+export interface IntegrityReport {
+  checkedAt: string;
+  results: IntegrityCheckResult[];
+  overall: IntegrityCheckStatus;
+}
+
+/**
+ * Runs the startup integrity sweep required by the spec:
+ * database, vault, pending jobs, application state. Repairs
+ * automatically when safe; otherwise returns guidance the UI
+ * presents to the user.
+ */
+export interface IntegrityService {
+  runStartupChecks(): Promise<IntegrityReport>;
+  runCheck(id: IntegrityCheckId): Promise<IntegrityCheckResult>;
+}
+
+/* ---------- Audit log (local-only) ---------- */
+
+export type AuditEventType =
+  | "permission_requested"
+  | "permission_granted"
+  | "permission_denied"
+  | "permission_revoked"
+  | "vault_write"
+  | "vault_restore"
+  | "vault_delete"
+  | "compression_completed"
+  | "compression_rolled_back"
+  | "retention_purge"
+  | "privacy_data_purge"
+  | "integrity_repair";
+
+export interface AuditEvent {
+  id: string;
+  type: AuditEventType;
+  occurredAt: string;
+  /** Short, non-sensitive summary. MUST NOT contain file paths or PII. */
+  summary: string;
+}
+
+/**
+ * A local, append-only log the user can inspect to see what the app
+ * has done on their behalf. Never leaves the device. Never contains
+ * media bytes, personal identifiers, or private file paths.
+ */
+export interface AuditService {
+  list(page?: number, pageSize?: number): Promise<Page<AuditEvent>>;
+  clear(): Promise<ServiceResult<void>>;
+}
+
+/* ---------- Friendly error presentation ---------- */
+
+export type FriendlyErrorSeverity = "info" | "warning" | "error";
+
+export interface FriendlyError {
+  /** Short title suitable for a dialog or toast. */
+  title: string;
+  /** Plain-language body. Never a stack trace or exception message. */
+  message: string;
+  severity: FriendlyErrorSeverity;
+  /** What the user can do next. Empty when nothing is actionable. */
+  recovery: string[];
+  /**
+   * Opaque support code the user can reference. Safe to display —
+   * contains no PII, no paths, no media content.
+   */
+  supportCode: string;
+}
+
+/**
+ * Converts any thrown error, ServiceError, or unknown failure into a
+ * FriendlyError. The UI MUST route ALL error surfaces through this
+ * service — release builds never expose stack traces or internal
+ * exception text.
+ */
+export interface ErrorPresentationService {
+  present(error: unknown, context?: { operation?: string }): FriendlyError;
+}
+
