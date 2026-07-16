@@ -30,6 +30,7 @@ import { Route as AppVaultRouteImport } from './routes/_app.vault'
 import { Route as AppSettingsRouteImport } from './routes/_app.settings'
 import { Route as AppJobsRouteImport } from './routes/_app.jobs'
 import { Route as AppHomeRouteImport } from './routes/_app.home'
+import { Route as AppVaultIndexRouteImport } from './routes/_app.vault.index'
 import { Route as AppVaultVideosRouteImport } from './routes/_app.vault.videos'
 import { Route as AppVaultPhotosRouteImport } from './routes/_app.vault.photos'
 import { Route as AppVaultDeletedRouteImport } from './routes/_app.vault.deleted'
@@ -138,6 +139,11 @@ const AppHomeRoute = AppHomeRouteImport.update({
   path: '/home',
   getParentRoute: () => AppRoute,
 } as any)
+const AppVaultIndexRoute = AppVaultIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AppVaultRoute,
+} as any)
 const AppVaultVideosRoute = AppVaultVideosRouteImport.update({
   id: '/videos',
   path: '/videos',
@@ -178,6 +184,7 @@ export interface FileRoutesByFullPath {
   '/vault/deleted': typeof AppVaultDeletedRoute
   '/vault/photos': typeof AppVaultPhotosRoute
   '/vault/videos': typeof AppVaultVideosRoute
+  '/vault/': typeof AppVaultIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -188,7 +195,6 @@ export interface FileRoutesByTo {
   '/home': typeof AppHomeRoute
   '/jobs': typeof AppJobsRoute
   '/settings': typeof AppSettingsRoute
-  '/vault': typeof AppVaultRouteWithChildren
   '/compress/progress': typeof CompressProgressRoute
   '/scan/results': typeof ScanResultsRoute
   '/settings/about': typeof SettingsAboutRoute
@@ -203,6 +209,7 @@ export interface FileRoutesByTo {
   '/vault/deleted': typeof AppVaultDeletedRoute
   '/vault/photos': typeof AppVaultPhotosRoute
   '/vault/videos': typeof AppVaultVideosRoute
+  '/vault': typeof AppVaultIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -230,6 +237,7 @@ export interface FileRoutesById {
   '/_app/vault/deleted': typeof AppVaultDeletedRoute
   '/_app/vault/photos': typeof AppVaultPhotosRoute
   '/_app/vault/videos': typeof AppVaultVideosRoute
+  '/_app/vault/': typeof AppVaultIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -257,6 +265,7 @@ export interface FileRouteTypes {
     | '/vault/deleted'
     | '/vault/photos'
     | '/vault/videos'
+    | '/vault/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -267,7 +276,6 @@ export interface FileRouteTypes {
     | '/home'
     | '/jobs'
     | '/settings'
-    | '/vault'
     | '/compress/progress'
     | '/scan/results'
     | '/settings/about'
@@ -282,6 +290,7 @@ export interface FileRouteTypes {
     | '/vault/deleted'
     | '/vault/photos'
     | '/vault/videos'
+    | '/vault'
   id:
     | '__root__'
     | '/'
@@ -308,6 +317,7 @@ export interface FileRouteTypes {
     | '/_app/vault/deleted'
     | '/_app/vault/photos'
     | '/_app/vault/videos'
+    | '/_app/vault/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -479,6 +489,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppHomeRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/vault/': {
+      id: '/_app/vault/'
+      path: '/'
+      fullPath: '/vault/'
+      preLoaderRoute: typeof AppVaultIndexRouteImport
+      parentRoute: typeof AppVaultRoute
+    }
     '/_app/vault/videos': {
       id: '/_app/vault/videos'
       path: '/videos'
@@ -507,12 +524,14 @@ interface AppVaultRouteChildren {
   AppVaultDeletedRoute: typeof AppVaultDeletedRoute
   AppVaultPhotosRoute: typeof AppVaultPhotosRoute
   AppVaultVideosRoute: typeof AppVaultVideosRoute
+  AppVaultIndexRoute: typeof AppVaultIndexRoute
 }
 
 const AppVaultRouteChildren: AppVaultRouteChildren = {
   AppVaultDeletedRoute: AppVaultDeletedRoute,
   AppVaultPhotosRoute: AppVaultPhotosRoute,
   AppVaultVideosRoute: AppVaultVideosRoute,
+  AppVaultIndexRoute: AppVaultIndexRoute,
 }
 
 const AppVaultRouteWithChildren = AppVaultRoute._addFileChildren(
