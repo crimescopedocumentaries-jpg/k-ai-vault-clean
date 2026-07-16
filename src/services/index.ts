@@ -115,42 +115,78 @@ export interface PermissionStatus {
   description: string;
 }
 
+/* ---------- Structured error contract ----------
+ * Native services never surface raw exceptions. Every failure is mapped to
+ * a ServiceError with user-facing copy; technical detail stays internal.
+ */
+export interface ServiceError {
+  code: string;
+  title: string;
+  explanation: string;
+  recovery: string;
+  retriable: boolean;
+}
+
+export type ServiceResult<T> =
+  | { ok: true; value: T }
+  | { ok: false; error: ServiceError };
+
 /* ---------- Service interface contracts ---------- */
 
 export interface StorageScannerService {
   getSnapshot(): Promise<StorageSnapshot>;
-  scan(onProgress?: (percent: number) => void): Promise<ScanBucket[]>;
+  startScan(onProgress?: (percent: number) => void): Promise<ScanBucket[]>;
+  cancelScan(): Promise<void>;
+  getProgress(): Promise<number>;
+  getResults(): Promise<ScanBucket[]>;
   listBucket(bucketId: string): Promise<MediaItem[]>;
 }
 
 export interface CompressionService {
   estimate(request: CompressionRequest): Promise<{ savedBytes: number; etaSeconds: number }>;
-  start(request: CompressionRequest): Promise<string>; // jobId
+  compressPhotos(request: CompressionRequest): Promise<string>; // jobId
+  pause(jobId: string): Promise<void>;
+  resume(jobId: string): Promise<void>;
+  cancel(jobId: string): Promise<void>;
   subscribe(jobId: string, cb: (p: CompressionProgress) => void): () => void;
 }
 
-export interface VideoCompressionService extends CompressionService {}
+export interface VideoCompressionService {
+  estimate(request: CompressionRequest): Promise<{ savedBytes: number; etaSeconds: number }>;
+  compressVideos(request: CompressionRequest): Promise<string>;
+  pause(jobId: string): Promise<void>;
+  resume(jobId: string): Promise<void>;
+  cancel(jobId: string): Promise<void>;
+  subscribe(jobId: string, cb: (p: CompressionProgress) => void): () => void;
+}
 
 export interface SafeVaultService {
   getSummary(): Promise<VaultSummary>;
-  listItems(): Promise<VaultItem[]>;
+  listContents(): Promise<VaultItem[]>;
+  storeOriginal(sourcePath: string): Promise<VaultItem>;
   restore(itemIds: string[]): Promise<void>;
-  purge(itemIds: string[]): Promise<void>;
+  delete(itemIds: string[]): Promise<void>;
   setRetentionDays(days: number): Promise<void>;
 }
 
-export interface ArchiveService {
+export interface ZipArchiveService {
   createZip(items: string[], name: string): Promise<string>; // jobId
+  extract(archiveId: string, destination: string): Promise<void>;
+  delete(archiveId: string): Promise<void>;
+  list(): Promise<{ id: string; name: string; bytes: number; createdAt: string }[]>;
 }
 
 export interface PermissionService {
   status(): Promise<PermissionStatus[]>;
+  check(key: PermissionKey): Promise<PermissionStatus>;
   request(key: PermissionKey): Promise<PermissionStatus>;
   openSettings(): Promise<void>;
 }
 
 export interface NotificationService {
-  notify(title: string, body: string): Promise<void>;
+  notifyProgress(jobId: string, title: string, percent: number): Promise<void>;
+  notifyCompletion(title: string, body: string): Promise<void>;
+  notifyFailure(title: string, body: string): Promise<void>;
   areEnabled(): Promise<boolean>;
 }
 
@@ -161,17 +197,65 @@ export interface JobCenterService {
   subscribe(cb: (jobs: Job[]) => void): () => void;
 }
 
-/* ---------- Placeholder providers (frontend preview only) ----------
- * Android Studio replaces `provideServices()` with real bindings. Until
- * then, screens read from `previewData` so the UI has realistic shapes.
+export interface AppSettings {
+  defaultQuality: CompressionQuality;
+  keepOriginals: boolean;
+  moveOriginalsToVault: boolean;
+  vaultRetentionDays: number;
+  notificationsEnabled: boolean;
+  reducedMotion: boolean;
+  theme: "system" | "light" | "dark";
+}
+
+export interface SettingsService {
+  load(): Promise<AppSettings>;
+  save(settings: Partial<AppSettings>): Promise<AppSettings>;
+  validate(settings: Partial<AppSettings>): Promise<ServiceResult<AppSettings>>;
+}
+
+export interface StorageInsight {
+  id: string;
+  icon: string;
+  title: string; // e.g. "Large videos", "WhatsApp videos", "Screenshots"
+  detail: string;
+  bytes: number;
+  actionLabel?: string;
+}
+
+export interface StorageInsightsService {
+  getInsights(): Promise<StorageInsight[]>;
+}
+
+export type HealthLevel = "ok" | "attention" | "blocked";
+
+export interface HealthStatus {
+  battery: HealthLevel;
+  storage: HealthLevel;
+  temperature: HealthLevel;
+  permissions: HealthLevel;
+  interruptions: HealthLevel;
+  recommendation?: string; // user-friendly, no technical detail
+}
+
+export interface HealthMonitorService {
+  getStatus(): Promise<HealthStatus>;
+  subscribe(cb: (s: HealthStatus) => void): () => void;
+}
+
+/* ---------- Service registry ----------
+ * Android Studio replaces `provideServices()` with real native bindings.
+ * Until then, screens read from `previewData` for realistic UI shapes.
  */
 export type Services = {
   scanner: StorageScannerService;
   compression: CompressionService;
   videoCompression: VideoCompressionService;
   vault: SafeVaultService;
-  archive: ArchiveService;
+  archive: ZipArchiveService;
   permissions: PermissionService;
   notifications: NotificationService;
   jobs: JobCenterService;
+  settings: SettingsService;
+  insights: StorageInsightsService;
+  health: HealthMonitorService;
 };
