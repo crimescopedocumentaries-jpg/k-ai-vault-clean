@@ -5,6 +5,7 @@ import { MButton } from "@/components/MButton";
 import { Symbol } from "@/components/IconButton";
 import { previewVault, previewVaultBytes } from "@/services/previewData";
 import { formatBytes } from "@/lib/format";
+import { useSettings } from "@/lib/settings";
 
 export const Route = createFileRoute("/_app/vault")({
   component: Vault,

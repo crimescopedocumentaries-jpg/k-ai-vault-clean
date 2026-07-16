@@ -37,7 +37,7 @@ function Settings() {
             </div>
           </div>
           <div className="mt-4 grid grid-cols-2 gap-3">
-            <Meta label="Vault" value="Enabled" />
+            <Meta label="Vault" value={vaultEnabled ? `${retention}-day retention` : "Disabled"} />
             <Meta label="App version" value="1.0.0" />
           </div>
         </Card>
