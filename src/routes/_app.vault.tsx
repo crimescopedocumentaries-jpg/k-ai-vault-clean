@@ -1,9 +1,9 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppBar } from "@/components/AppBar";
 import { Card } from "@/components/Card";
 import { MButton } from "@/components/MButton";
 import { Symbol } from "@/components/IconButton";
-import { previewVault } from "@/services/previewData";
+import { previewVault, previewVaultBytes } from "@/services/previewData";
 import { formatBytes } from "@/lib/format";
 
 export const Route = createFileRoute("/_app/vault")({
@@ -11,15 +11,31 @@ export const Route = createFileRoute("/_app/vault")({
 });
 
 const groups = [
-  { key: "photos", label: "Protected Photos", icon: "image", count: previewVault.items.photos },
-  { key: "videos", label: "Protected Videos", icon: "movie", count: previewVault.items.videos },
+  {
+    key: "photos",
+    label: "Protected Photos",
+    icon: "image",
+    count: previewVault.items.photos,
+    bytes: previewVaultBytes.photos,
+    to: "/vault/photos",
+  },
+  {
+    key: "videos",
+    label: "Protected Videos",
+    icon: "movie",
+    count: previewVault.items.videos,
+    bytes: previewVaultBytes.videos,
+    to: "/vault/videos",
+  },
   {
     key: "deleted",
     label: "Deleted Through K-Ai",
     icon: "delete",
     count: previewVault.items.deletedThroughApp,
+    bytes: previewVaultBytes.deletedThroughApp,
+    to: "/vault/deleted",
   },
-];
+] as const;
 
 function Vault() {
   return (
