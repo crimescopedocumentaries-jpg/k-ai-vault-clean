@@ -465,6 +465,8 @@ export function VaultDetail({
             </div>
           </div>
         </div>
+      )}
+
       {restoring && (
         <div
           role="dialog"
