@@ -10,6 +10,24 @@ import { useSettings } from "@/lib/settings";
 
 export const Route = createFileRoute("/_app/vault/")({
   component: Vault,
+  head: () => ({
+    meta: [
+      { title: "Safe Vault — K-Ai Storage Saver" },
+      {
+        name: "description",
+        content:
+          "Safe Vault keeps original photos and videos protected after compression, so you can restore them at full quality anytime.",
+      },
+      { property: "og:title", content: "Safe Vault — K-Ai Storage Saver" },
+      {
+        property: "og:description",
+        content:
+          "Protected originals with retention-based restore. Nothing is deleted until you say so.",
+      },
+      { property: "og:url", content: "https://k-ai-vault-clean.lovable.app/vault" },
+    ],
+    links: [{ rel: "canonical", href: "https://k-ai-vault-clean.lovable.app/vault" }],
+  }),
 });
 
 const groups = [
