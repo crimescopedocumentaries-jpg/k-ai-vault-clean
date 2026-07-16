@@ -1,4 +1,5 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { useState } from "react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { AppBar } from "@/components/AppBar";
 import { Card } from "@/components/Card";
 import { MButton } from "@/components/MButton";
@@ -40,6 +41,27 @@ const groups = [
 
 function Vault() {
   const { settings } = useSettings();
+  const navigate = useNavigate();
+  const [restoreOpen, setRestoreOpen] = useState(false);
+  const [toast, setToast] = useState<string | null>(null);
+
+  const showToast = (msg: string) => {
+    setToast(msg);
+    setTimeout(() => setToast(null), 2600);
+  };
+
+  const handleRestoreAll = () => {
+    if (
+      typeof window !== "undefined" &&
+      !window.confirm(
+        `Restore all ${previewVault.itemCount} items (${formatBytes(previewVault.protectedBytes)}) from Safe Vault?`,
+      )
+    )
+      return;
+    setRestoreOpen(false);
+    showToast("Restoring all items to your gallery…");
+  };
+
   return (
     <div className="flex flex-1 flex-col">
       <AppBar title="Safe Vault" large subtitle="Originals we’re keeping safe for you." />
@@ -68,7 +90,12 @@ function Vault() {
             <VaultMeta label="Last change" value={previewVault.lastUpdated} icon="update" />
           </div>
 
-          <MButton size="lg" full leading={<Symbol name="restore" size={20} />}>
+          <MButton
+            size="lg"
+            full
+            leading={<Symbol name="restore" size={20} />}
+            onClick={() => setRestoreOpen(true)}
+          >
             Restore items
           </MButton>
         </Card>
@@ -107,6 +134,84 @@ function Vault() {
           </p>
         </Card>
       </div>
+
+      {restoreOpen && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Restore items"
+          className="fixed inset-0 z-40 flex items-end justify-center bg-black/60 p-0 sm:items-center sm:p-4"
+          onClick={() => setRestoreOpen(false)}
+        >
+          <div
+            className="w-full max-w-md rounded-t-3xl bg-surface p-5 sm:rounded-3xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className="text-[18px] font-medium text-on-surface">Restore items</h2>
+            <p className="mt-1 text-[13px] text-on-surface-variant">
+              Choose what to restore from Safe Vault. Restored originals return to your gallery.
+            </p>
+            <div className="mt-4 flex flex-col gap-2">
+              <MButton
+                variant="tonal"
+                full
+                leading={<Symbol name="image" size={18} />}
+                onClick={() => {
+                  setRestoreOpen(false);
+                  navigate({ to: "/vault/photos" });
+                }}
+              >
+                Choose photos to restore
+              </MButton>
+              <MButton
+                variant="tonal"
+                full
+                leading={<Symbol name="movie" size={18} />}
+                onClick={() => {
+                  setRestoreOpen(false);
+                  navigate({ to: "/vault/videos" });
+                }}
+              >
+                Choose videos to restore
+              </MButton>
+              <MButton
+                variant="tonal"
+                full
+                leading={<Symbol name="delete" size={18} />}
+                onClick={() => {
+                  setRestoreOpen(false);
+                  navigate({ to: "/vault/deleted" });
+                }}
+              >
+                Recover deleted items
+              </MButton>
+              <MButton
+                full
+                leading={<Symbol name="restore" size={18} />}
+                onClick={handleRestoreAll}
+              >
+                Restore everything ({formatBytes(previewVault.protectedBytes)})
+              </MButton>
+              <MButton variant="outlined" full onClick={() => setRestoreOpen(false)}>
+                Cancel
+              </MButton>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {toast && (
+        <div
+          role="status"
+          aria-live="polite"
+          className="fixed inset-x-0 bottom-20 z-50 flex justify-center px-4"
+        >
+          <div className="flex items-center gap-2 rounded-full bg-inverse-surface px-4 py-2 text-[13px] text-inverse-on-surface shadow-lg">
+            <Symbol name="check_circle" size={18} />
+            {toast}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
