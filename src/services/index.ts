@@ -725,6 +725,7 @@ export type Services = {
   platform: PlatformInfoService;
   qa: QualityAssuranceService;
   release: ReleaseReadinessService;
+  ai: AIRecommendationService;
   repositories: {
     vault: VaultRepository;
     compressionHistory: CompressionHistoryRepository;
@@ -1197,3 +1198,121 @@ export interface ReleaseReadinessService {
   /** Immediately halt an in-progress staged rollout. */
   pauseRollout(reason: string): Promise<ServiceResult<void>>;
 }
+
+/* ============================================================
+ * AI ARCHITECTURE INTEGRATION (v1 Revision A)
+ * ============================================================
+ * Every engine below runs ENTIRELY ON-DEVICE.
+ *
+ *   - No cloud AI. No online inference. No remote ML.
+ *   - No uploads of photos, videos, or metadata.
+ *   - AI may recommend, prioritize, predict, estimate, explain.
+ *   - AI MUST NEVER delete, compress, move, or override
+ *     user decisions on its own.
+ *   - Every recommendation surfaces Accept / Dismiss / Learn More.
+ *   - Users may disable AI recommendations in Settings.
+ *
+ * Governing document: /ENGINEERING_CONSTITUTION.md (Revision A).
+ * ============================================================ */
+
+export type AIRecommendationKind =
+  | "compress_whatsapp_videos"
+  | "compress_large_videos"
+  | "archive_old_media"
+  | "review_downloads"
+  | "already_optimized"
+  | "storage_healthy"
+  | "screenshots_cleanup"
+  | "duplicate_folders"
+  | "unused_archives";
+
+export type AIRecommendationSeverity = "info" | "suggestion" | "high_impact";
+
+export type AIConfidence = "low" | "medium" | "high";
+
+export interface AIRecommendation {
+  id: string;
+  kind: AIRecommendationKind;
+  /** Short, friendly headline shown on the Home Dashboard. */
+  title: string;
+  /** One-sentence plain-language explanation. */
+  rationale: string;
+  /** Estimated recoverable bytes, if applicable. Honest — may be undefined. */
+  estimatedRecoverableBytes?: number;
+  severity: AIRecommendationSeverity;
+  confidence: AIConfidence;
+  /** Optional route or bucket the "Accept" action should open. */
+  actionTarget?: string;
+  createdAt: string;
+}
+
+export interface AICompressionEstimate {
+  quality: CompressionQuality;
+  expectedSavingsBytes: number;
+  expectedQualityLabel: string;
+  estimatedDurationSeconds: number;
+  confidence: AIConfidence;
+  /** Why this quality is being suggested (plain language). */
+  reason: string;
+}
+
+export interface AICompressionAdvice {
+  recommendedQuality: CompressionQuality;
+  estimates: AICompressionEstimate[];
+  /** True when the source appears already optimized and compression is discouraged. */
+  alreadyOptimized: boolean;
+}
+
+export interface AIHealthInsight {
+  /** Plain-language summary, e.g. "Videos are consuming most of your storage." */
+  summary: string;
+  /** Optional supporting bullets shown under the summary. */
+  details: string[];
+  /** Confidence in the summary itself, not a fabricated score. */
+  confidence: AIConfidence;
+}
+
+export interface AIJobExplanation {
+  /** Friendly translation of a technical failure or status. */
+  message: string;
+  /** Suggested next step in plain language, if any. */
+  suggestion?: string;
+}
+
+export interface AIRecoveryExplanation {
+  itemsToRestore: number;
+  storageImpactBytes: number;
+  vaultRetentionDaysRemaining?: number;
+  potentialConflicts: string[];
+  summary: string;
+}
+
+/**
+ * On-device recommendation engine. Produces at most ONE active
+ * recommendation for the Home Dashboard at a time. All inference
+ * is local; the service must never make network calls.
+ */
+export interface AIRecommendationService {
+  /** The single active recommendation to show on Home, or null. */
+  getActiveRecommendation(): Promise<AIRecommendation | null>;
+  /** Full recent recommendation list (for Insights screen / history). */
+  listRecent(limit?: number): Promise<AIRecommendation[]>;
+  accept(id: string): Promise<ServiceResult<void>>;
+  dismiss(id: string): Promise<ServiceResult<void>>;
+  /** Clear all stored recommendations and reset the engine state. */
+  resetHistory(): Promise<ServiceResult<void>>;
+  /** User-controlled master switch (mirrored in Settings). */
+  setEnabled(enabled: boolean): Promise<ServiceResult<void>>;
+  isEnabled(): Promise<boolean>;
+  /** Analyzes storage on-device and yields a fresh recommendation set. */
+  analyzeStorage(snapshot: StorageSnapshot): Promise<AIRecommendation[]>;
+  /** Compression pre-flight advisor. */
+  adviseCompression(bucketId: string): Promise<AICompressionAdvice>;
+  /** Intelligent storage-health summary replacing the generic score. */
+  getHealthInsight(snapshot: StorageSnapshot): Promise<AIHealthInsight>;
+  /** Friendly job status / error translation. */
+  explainJob(jobId: string): Promise<AIJobExplanation>;
+  /** Recovery advisor for Safe Vault restores. */
+  explainRestore(itemIds: string[]): Promise<AIRecoveryExplanation>;
+}
+
