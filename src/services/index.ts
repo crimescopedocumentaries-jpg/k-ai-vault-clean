@@ -708,6 +708,8 @@ export type Services = {
   integrity: IntegrityService;
   audit: AuditService;
   errors: ErrorPresentationService;
+  platform: PlatformInfoService;
+  qa: QualityAssuranceService;
   repositories: {
     vault: VaultRepository;
     compressionHistory: CompressionHistoryRepository;
