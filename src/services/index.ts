@@ -450,6 +450,243 @@ export interface HealthMonitorService {
   subscribe(cb: (s: HealthStatus) => void): () => void;
 }
 
+/* ---------- Local Database (Room) contract ----------
+ *
+ * The Android app persists ALL state in an on-device Room database. Nothing
+ * leaves the device: no cloud sync, no hidden backups, no analytics, no
+ * credentials. These interfaces describe the repository boundary the UI
+ * consumes; DAOs stay inside the Android layer. ViewModels talk to
+ * repositories only — never Room directly.
+ */
+
+export type VaultEntityStatus = "protected" | "restored" | "deleted" | "expired";
+export type RestoreStatus = "none" | "pending" | "in-progress" | "verified" | "failed";
+
+export interface VaultEntity {
+  id: string;
+  filename: string;
+  mediaType: "photo" | "video" | "document";
+  originalBytes: number;
+  protectedBytes: number;
+  fingerprint: string;
+  createdAt: string;
+  retentionUntil: string | null; // null = keep until manual delete
+  vaultStatus: VaultEntityStatus;
+  restoreStatus: RestoreStatus;
+  lastVerifiedAt: string | null;
+}
+
+export interface CompressionHistoryEntity {
+  jobId: string;
+  date: string;
+  recoveredBytes: number;
+  filesProcessed: number;
+  filesSkipped: number;
+  filesFailed: number;
+  profile: CompressionQuality;
+  verification: JobVerification;
+  durationSeconds: number;
+}
+
+export interface JobCenterEntity {
+  jobId: string;
+  kind: JobKind;
+  status: JobStatus | "paused" | "cancelled";
+  progress: number;
+  startedAt: string;
+  completedAt: string | null;
+  pausedAt: string | null;
+  cancelledAt: string | null;
+  verification: JobVerification | null;
+  currentFile: string | null;
+  etaSeconds: number | null;
+}
+
+export interface ScanResultEntity {
+  scanDate: string;
+  photosFound: number;
+  videosFound: number;
+  recoverableBytes: number;
+  breakdown: StorageBreakdownEntry[];
+  recommendation: string;
+  estimatedDurationSeconds: number;
+}
+
+export interface StorageInsightsEntity {
+  recoveredTodayBytes: number;
+  recoveredWeekBytes: number;
+  recoveredMonthBytes: number;
+  largeVideosBytes: number;
+  largePhotosBytes: number;
+  screenshotsBytes: number;
+  downloadsBytes: number;
+  protectedOriginalsBytes: number;
+  updatedAt: string;
+}
+
+export interface SettingsEntity {
+  compressionProfile: CompressionQuality;
+  keepOriginals: boolean;
+  safeVaultEnabled: boolean;
+  retentionPeriod: VaultRetention;
+  notificationsEnabled: boolean;
+  theme: "system" | "light" | "dark";
+  preserveMetadata: boolean;
+  reduceMotion: boolean;
+}
+
+export type AppScreen =
+  | "welcome"
+  | "permissions"
+  | "home"
+  | "scan"
+  | "scan-results"
+  | "review"
+  | "compress"
+  | "compress-progress"
+  | "complete"
+  | "vault"
+  | "jobs"
+  | "settings";
+
+export interface ApplicationStateEntity {
+  currentScreen: AppScreen;
+  runningJobId: string | null;
+  lastScanAt: string | null;
+  pendingRestoreJobId: string | null;
+  pendingCompressionJobId: string | null;
+  pendingVerificationJobId: string | null;
+  appVersion: string;
+}
+
+/** Structured DB failure — the UI shows plain-language copy, never SQL. */
+export interface DatabaseError extends ServiceError {
+  domain:
+    | "vault"
+    | "compression-history"
+    | "jobs"
+    | "scan-results"
+    | "insights"
+    | "settings"
+    | "app-state"
+    | "schema";
+}
+
+export type DatabaseHealthLevel = "healthy" | "repaired" | "attention" | "unavailable";
+
+export interface DatabaseHealthReport {
+  level: DatabaseHealthLevel;
+  schemaVersion: number;
+  tableIntegrityOk: boolean;
+  foreignKeyIntegrityOk: boolean;
+  vaultConsistencyOk: boolean;
+  jobConsistencyOk: boolean;
+  autoRepairApplied: boolean;
+  explanation: string; // plain-language, no SQL
+  checkedAt: string;
+}
+
+/** Cached scan freshness — enables "Last scanned 10 minutes ago" reuse. */
+export interface ScanCacheStatus {
+  hasFreshCache: boolean;
+  lastScanAt: string | null;
+  storageChangedSinceScan: boolean;
+  ageLabel: string;
+}
+
+/** Pagination for large lists (vault contents, compression history, jobs). */
+export interface Page<T> {
+  items: T[];
+  nextCursor: string | null;
+  totalCount?: number;
+}
+
+export interface PageRequest {
+  cursor?: string;
+  limit: number;
+}
+
+/* ---------- Repository interfaces ----------
+ * Repositories are the single source of truth. They coordinate Room, native
+ * services and the Operation Coordinator. All work runs on background
+ * threads; every method is async. ViewModels consume these only.
+ */
+
+export interface VaultRepository {
+  observe(query?: VaultQuery): AsyncIterable<VaultEntity[]>;
+  page(query: VaultQuery, page: PageRequest): Promise<ServiceResult<Page<VaultEntity>>>;
+  get(id: string): Promise<ServiceResult<VaultEntity>>;
+  upsert(entity: VaultEntity): Promise<ServiceResult<void>>;
+  markRestoreStatus(id: string, status: RestoreStatus): Promise<ServiceResult<void>>;
+  purgeExpired(now: string): Promise<ServiceResult<{ removedCount: number }>>;
+}
+
+export interface CompressionHistoryRepository {
+  observeRecent(limit: number): AsyncIterable<CompressionHistoryEntity[]>;
+  page(page: PageRequest): Promise<ServiceResult<Page<CompressionHistoryEntity>>>;
+  record(entry: CompressionHistoryEntity): Promise<ServiceResult<void>>;
+}
+
+export interface JobRepository {
+  observe(): AsyncIterable<JobCenterEntity[]>;
+  get(jobId: string): Promise<ServiceResult<JobCenterEntity>>;
+  upsert(entity: JobCenterEntity): Promise<ServiceResult<void>>;
+  markCancelled(jobId: string, at: string): Promise<ServiceResult<void>>;
+  markPaused(jobId: string, at: string): Promise<ServiceResult<void>>;
+  markCompleted(
+    jobId: string,
+    at: string,
+    verification: JobVerification,
+  ): Promise<ServiceResult<void>>;
+}
+
+export interface ScanResultRepository {
+  latest(): Promise<ServiceResult<ScanResultEntity | null>>;
+  cacheStatus(): Promise<ScanCacheStatus>;
+  record(result: ScanResultEntity): Promise<ServiceResult<void>>;
+  invalidate(): Promise<void>;
+}
+
+export interface StorageInsightsRepository {
+  observe(): AsyncIterable<StorageInsightsEntity>;
+  refresh(): Promise<ServiceResult<StorageInsightsEntity>>;
+}
+
+export interface SettingsRepository {
+  observe(): AsyncIterable<SettingsEntity>;
+  load(): Promise<ServiceResult<SettingsEntity>>;
+  update(patch: Partial<SettingsEntity>): Promise<ServiceResult<SettingsEntity>>;
+}
+
+/**
+ * Application state repository.
+ *
+ * Powers state recovery after unexpected termination: restores current screen,
+ * running jobs, pending operations and user selections. NEVER restarts a
+ * completed job — the coordinator checks completion first.
+ */
+export interface ApplicationStateRepository {
+  observe(): AsyncIterable<ApplicationStateEntity>;
+  snapshot(): Promise<ServiceResult<ApplicationStateEntity>>;
+  update(patch: Partial<ApplicationStateEntity>): Promise<ServiceResult<void>>;
+  clearPending(kind: "restore" | "compression" | "verification"): Promise<ServiceResult<void>>;
+}
+
+/**
+ * Database service — owns lifecycle, migrations and health.
+ *
+ * On startup: `runHealthCheck()` verifies schema version, table & foreign-key
+ * integrity, vault consistency and job consistency; repairs automatically
+ * when safe. Migrations are versioned and NEVER silently drop user data.
+ */
+export interface DatabaseService {
+  currentSchemaVersion(): Promise<number>;
+  runHealthCheck(): Promise<DatabaseHealthReport>;
+  migrateIfNeeded(): Promise<ServiceResult<{ from: number; to: number }>>;
+  isAvailable(): Promise<boolean>;
+  subscribeAvailability(cb: (available: boolean) => void): () => void;
+}
+
 /* ---------- Service registry ----------
  * Android Studio replaces `provideServices()` with real native bindings.
  * Until then, screens read from `previewData` for realistic UI shapes.
@@ -466,4 +703,14 @@ export type Services = {
   settings: SettingsService;
   insights: StorageInsightsService;
   health: HealthMonitorService;
+  db: DatabaseService;
+  repositories: {
+    vault: VaultRepository;
+    compressionHistory: CompressionHistoryRepository;
+    jobs: JobRepository;
+    scanResults: ScanResultRepository;
+    insights: StorageInsightsRepository;
+    settings: SettingsRepository;
+    appState: ApplicationStateRepository;
+  };
 };
