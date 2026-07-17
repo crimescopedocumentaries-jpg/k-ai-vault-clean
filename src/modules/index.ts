@@ -16,9 +16,12 @@ export { SettingsService } from "./settings/service";
 export { AuthService } from "./auth/service";
 export { SyncService } from "./sync/service";
 export { NotificationsService } from "./notifications/service";
+export { HistoryService } from "./reports/history";
 
 // Core primitives (advanced usage / native adapters)
 export { connectivity } from "./core/connectivity";
 export { operationQueue } from "./core/queue";
 export { RepositoryCoordinator } from "./core/repository";
 export { LocalStoreRepository } from "./core/local-store";
+export { CloudKvRepository } from "./core/cloud-store";
+export { bootstrapModules } from "./bootstrap";

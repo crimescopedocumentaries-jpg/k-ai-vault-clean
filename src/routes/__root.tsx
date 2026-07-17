@@ -12,6 +12,11 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { SettingsProvider } from "../lib/settings";
+import { bootstrapModules } from "../modules/bootstrap";
+
+if (typeof window !== "undefined") {
+  bootstrapModules();
+}
 
 function NotFoundComponent() {
   return (
