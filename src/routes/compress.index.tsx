@@ -1,11 +1,12 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AppBar } from "@/components/AppBar";
 import { IconButton, Symbol } from "@/components/IconButton";
 import { Card } from "@/components/Card";
 import { MButton } from "@/components/MButton";
-import type { CompressionQuality } from "@/services";
 import { formatBytes, formatDuration } from "@/lib/format";
+import { CompressionService } from "@/modules";
+import type { CompressionMode } from "@/modules/compression/service";
 
 export const Route = createFileRoute("/compress/")({
   component: CompressOptions,
@@ -14,41 +15,90 @@ export const Route = createFileRoute("/compress/")({
   }),
 });
 
-const options: {
-  key: CompressionQuality;
+// UI-facing keys preserved. Mapped to the service's CompressionMode.
+type UiQuality = "high" | "balanced" | "maximum";
+
+const MODE_MAP: Record<UiQuality, CompressionMode> = {
+  high: "high-quality",
+  balanced: "balanced",
+  maximum: "max-savings",
+};
+
+type Option = {
+  key: UiQuality;
   title: string;
   body: string;
   save: number;
   eta: number;
-}[] = [
+};
+
+const BASE_OPTIONS: Option[] = [
   {
     key: "high",
     title: "High quality",
     body: "Barely visible difference. Great for photos you care about.",
-    save: 5.4 * 1024 ** 3,
-    eta: 12 * 60,
+    save: 0,
+    eta: 0,
   },
   {
     key: "balanced",
     title: "Balanced",
     body: "Best trade-off. Recommended for most videos.",
-    save: 8.6 * 1024 ** 3,
-    eta: 8 * 60,
+    save: 0,
+    eta: 0,
   },
   {
     key: "maximum",
     title: "Maximum savings",
     body: "Smaller files, some visible quality loss.",
-    save: 12.1 * 1024 ** 3,
-    eta: 6 * 60,
+    save: 0,
+    eta: 0,
   },
 ];
 
+// Nominal working set size for pre-scan estimation.
+const NOMINAL_PATH_COUNT = 128;
+const NOMINAL_PATHS = Array.from(
+  { length: NOMINAL_PATH_COUNT },
+  (_, i) => `nominal://file-${i}`,
+);
+
 function CompressOptions() {
   const navigate = useNavigate();
-  const [quality, setQuality] = useState<CompressionQuality>("balanced");
+  const [quality, setQuality] = useState<UiQuality>("balanced");
   const [keep, setKeep] = useState(true);
   const [vault, setVault] = useState(true);
+  const [options, setOptions] = useState<Option[]>(BASE_OPTIONS);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const estimates = await Promise.all(
+        BASE_OPTIONS.map((o) =>
+          CompressionService.estimate(NOMINAL_PATHS, MODE_MAP[o.key]),
+        ),
+      );
+      if (cancelled) return;
+      setOptions(
+        BASE_OPTIONS.map((o, i) => ({
+          ...o,
+          save: estimates[i].savingsBytes,
+          eta: Math.max(1, Math.round(estimates[i].durationMs / 1000)),
+        })),
+      );
+      // Adopt AI recommendation when available.
+      const rec = estimates.find((e) => e.recommendation)?.recommendation;
+      if (rec) {
+        const uiKey = (Object.keys(MODE_MAP) as UiQuality[]).find(
+          (k) => MODE_MAP[k] === rec,
+        );
+        if (uiKey) setQuality(uiKey);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const active = options.find((o) => o.key === quality)!;
 
@@ -66,14 +116,14 @@ function CompressOptions() {
       <div className="flex flex-col gap-4 px-4 pb-6">
         <div className="flex flex-col gap-2">
           {options.map((o) => {
-            const active = quality === o.key;
+            const isActive = quality === o.key;
             return (
               <button
                 key={o.key}
                 onClick={() => setQuality(o.key)}
                 className={
                   "ripple w-full rounded-3xl border p-4 text-left transition " +
-                  (active
+                  (isActive
                     ? "border-primary bg-primary-container"
                     : "border-border bg-surface-1")
                 }
@@ -82,10 +132,10 @@ function CompressOptions() {
                   <span
                     className={
                       "flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 " +
-                      (active ? "border-primary bg-primary" : "border-on-surface-variant")
+                      (isActive ? "border-primary bg-primary" : "border-on-surface-variant")
                     }
                   >
-                    {active && (
+                    {isActive && (
                       <span className="h-2 w-2 rounded-full bg-primary-foreground" />
                     )}
                   </span>
@@ -93,7 +143,7 @@ function CompressOptions() {
                     <p
                       className={
                         "text-[15px] font-medium " +
-                        (active ? "text-on-primary-container" : "text-on-surface")
+                        (isActive ? "text-on-primary-container" : "text-on-surface")
                       }
                     >
                       {o.title}
@@ -101,7 +151,7 @@ function CompressOptions() {
                     <p
                       className={
                         "mt-0.5 text-[12px] leading-snug " +
-                        (active ? "text-on-primary-container/85" : "text-on-surface-variant")
+                        (isActive ? "text-on-primary-container/85" : "text-on-surface-variant")
                       }
                     >
                       {o.body}
@@ -112,14 +162,14 @@ function CompressOptions() {
                   <MiniStat
                     icon="savings"
                     label="Save"
-                    value={formatBytes(o.save)}
-                    active={active}
+                    value={o.save > 0 ? formatBytes(o.save) : "—"}
+                    active={isActive}
                   />
                   <MiniStat
                     icon="schedule"
                     label="Time"
-                    value={formatDuration(o.eta)}
-                    active={active}
+                    value={o.eta > 0 ? formatDuration(o.eta) : "—"}
+                    active={isActive}
                   />
                 </div>
               </button>
@@ -158,10 +208,10 @@ function CompressOptions() {
               navigate({ to: "/compress/progress", search: { quality: active.key } })
             }
           >
-            Start compression • Save {formatBytes(active.save)}
+            Start compression{active.save > 0 ? ` • Save ${formatBytes(active.save)}` : ""}
           </MButton>
           <p className="mt-2 text-center text-[11px] text-on-surface-variant">
-            About {formatDuration(active.eta)} • runs in the background
+            {active.eta > 0 ? `About ${formatDuration(active.eta)} • ` : ""}runs in the background
           </p>
         </div>
       </div>

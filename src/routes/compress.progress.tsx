@@ -1,10 +1,12 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AppBar } from "@/components/AppBar";
 import { IconButton, Symbol } from "@/components/IconButton";
 import { Card } from "@/components/Card";
 import { MButton } from "@/components/MButton";
 import { formatBytes, formatDuration } from "@/lib/format";
+import { CompressionService } from "@/modules";
+import type { CompressionMode } from "@/modules/compression/service";
 
 export const Route = createFileRoute("/compress/progress")({
   component: CompressProgress,
@@ -12,6 +14,15 @@ export const Route = createFileRoute("/compress/progress")({
     quality: (s.quality as string) ?? "balanced",
   }),
 });
+
+const UI_TO_MODE: Record<string, CompressionMode> = {
+  high: "high-quality",
+  balanced: "balanced",
+  maximum: "max-savings",
+};
+
+const TOTAL_FILES = 128;
+const PATHS = Array.from({ length: TOTAL_FILES }, (_, i) => `nominal://file-${i}`);
 
 const files = [
   "VID_20240102_113322.mp4",
@@ -23,27 +34,42 @@ const files = [
 
 function CompressProgress() {
   const navigate = useNavigate();
+  const { quality } = Route.useSearch();
+  const mode = UI_TO_MODE[quality] ?? "balanced";
+
   const [progress, setProgress] = useState(0);
   const [processed, setProcessed] = useState(0);
-  const total = 128;
+  const [estimatedSavings, setEstimatedSavings] = useState(0);
+  const [estimatedDurationMs, setEstimatedDurationMs] = useState(0);
+  const startedAt = useRef<number>(Date.now());
 
   useEffect(() => {
-    const id = setInterval(() => {
-      setProgress((p) => {
-        const next = Math.min(100, p + 1.2 + Math.random() * 1.5);
-        setProcessed(Math.min(total, Math.round((next / 100) * total)));
-        if (next >= 100) {
-          clearInterval(id);
-          setTimeout(() => navigate({ to: "/complete" }), 500);
-        }
-        return next;
+    let cancelled = false;
+    (async () => {
+      const est = await CompressionService.estimate(PATHS, mode);
+      if (cancelled) return;
+      setEstimatedSavings(est.savingsBytes);
+      setEstimatedDurationMs(est.durationMs);
+      startedAt.current = Date.now();
+      await CompressionService.compress(PATHS, mode, (p) => {
+        if (cancelled) return;
+        const pct = Math.min(100, p * 100);
+        setProgress(pct);
+        setProcessed(Math.min(TOTAL_FILES, Math.round(p * TOTAL_FILES)));
       });
-    }, 220);
-    return () => clearInterval(id);
-  }, [navigate]);
+      if (cancelled) return;
+      setProgress(100);
+      setProcessed(TOTAL_FILES);
+      setTimeout(() => navigate({ to: "/complete" }), 500);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [mode, navigate]);
 
-  const bytesSaved = (progress / 100) * 8.6 * 1024 ** 3;
-  const eta = Math.max(1, (100 - progress) * 3);
+  const bytesSaved = (progress / 100) * estimatedSavings;
+  const remainingMs = Math.max(0, estimatedDurationMs * (1 - progress / 100));
+  const eta = Math.max(1, Math.round(remainingMs / 1000));
 
   const size = 220;
   const stroke = 12;
@@ -94,7 +120,7 @@ function CompressProgress() {
               {formatBytes(bytesSaved)}
             </span>
             <span className="mt-1 text-[12px] text-on-surface-variant">
-              {processed} of {total} files
+              {processed} of {TOTAL_FILES} files
             </span>
           </div>
         </div>
