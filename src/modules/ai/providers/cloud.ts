@@ -1,23 +1,31 @@
 /**
- * CloudAIProvider — Lovable AI Gateway–backed provider.
- * Only invoked by AIRouter when connectivity is online. UI is unaware.
- * The actual gateway call is wired via a server function (createServerFn)
- * so keys never enter the client bundle.
+ * CloudAIProvider — production provider that calls the Lovable AI Gateway
+ * through a server function. Keys never enter the client bundle.
+ *
+ * Swap the underlying model/provider (OpenAI, Gemini, Claude, DeepSeek,
+ * self-hosted LLM) inside `src/lib/ai.functions.ts` without touching the UI,
+ * AIService, or AIRouter.
  */
 
 import type { AIProvider, AIRequest, AIResponse } from "../router";
 import { connectivity } from "../../core/connectivity";
+import { askAi } from "@/lib/ai.functions";
 
 export const cloudAIProvider: AIProvider = {
   id: "cloud.gateway.v1",
   kind: "cloud",
   available: () => connectivity.isOnline,
   async run(req: AIRequest): Promise<AIResponse> {
-    // Placeholder: real call goes through a server function that talks to
-    // the Lovable AI Gateway. Kept behind the router so UI never knows.
+    const result = await askAi({
+      data: {
+        kind: req.kind,
+        prompt: req.prompt,
+        context: req.context,
+      },
+    });
     return {
-      text: `[cloud] ${req.prompt.slice(0, 80)}`,
-      confidence: 0.85,
+      text: result.text,
+      confidence: result.confidence,
       source: "cloud",
     };
   },
