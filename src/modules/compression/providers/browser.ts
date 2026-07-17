@@ -31,10 +31,14 @@ export const browserCompressionProvider: CompressionProvider = {
     };
   },
   async compress(paths, mode, onProgress) {
+    const est = await this.estimate(paths, mode);
+    const perFileMs = paths.length > 0 ? est.durationMs / paths.length : 0;
     for (let i = 0; i < paths.length; i++) {
+      if (perFileMs > 0) {
+        await new Promise((r) => setTimeout(r, perFileMs));
+      }
       onProgress?.((i + 1) / paths.length);
     }
-    const est = await this.estimate(paths, mode);
     return { savingsBytes: est.savingsBytes, outputPaths: paths };
   },
 };
