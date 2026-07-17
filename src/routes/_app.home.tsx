@@ -6,12 +6,8 @@ import { Card } from "@/components/Card";
 import { MButton } from "@/components/MButton";
 import { StorageRing } from "@/components/StorageRing";
 import { formatBytes } from "@/lib/format";
-import {
-  StorageService,
-  ReportsService,
-  AIService,
-  type StorageReport,
-} from "@/modules";
+import { StorageService, ReportsService, AIService } from "@/modules";
+import type { StorageReport } from "@/modules/storage/service";
 import type { ReportEntry } from "@/modules/reports/service";
 
 export const Route = createFileRoute("/_app/home")({
