@@ -1,10 +1,12 @@
 /**
  * VaultService.
- * Offline: AES encryption/decryption, PIN, biometrics.
- * Online: optional cloud backup + cross-device sync (queued when offline).
+ * Offline: AES encryption/decryption, PIN, biometrics (Android provider).
+ * Online: optional cloud backup + cross-device metadata sync via
+ *   CloudKvRepository. Encrypted payloads themselves are never sent
+ *   to the cloud by this layer — only metadata.
  */
 
-import { RepositoryCoordinator } from "../core/repository";
+import { RepositoryCoordinator, type CloudRepository } from "../core/repository";
 import { LocalStoreRepository } from "../core/local-store";
 
 export interface VaultEntry {
@@ -19,7 +21,7 @@ export interface VaultEntry {
 
 export interface VaultProvider {
   encrypt(path: string): Promise<VaultEntry>;
-  decrypt(entry: VaultEntry): Promise<string>; // returns restored path
+  decrypt(entry: VaultEntry): Promise<string>;
   unlock(pinOrBio: string): Promise<boolean>;
 }
 
@@ -42,13 +44,22 @@ const defaultProvider: VaultProvider = {
 };
 
 let provider: VaultProvider = defaultProvider;
+let cloud: CloudRepository<VaultEntry> | undefined;
+let repo = build();
 
-const repo = new RepositoryCoordinator<VaultEntry>({
-  name: "vault",
-  local: new LocalStoreRepository<VaultEntry>("vault"),
-  // cloud: optional — attach a CloudRepository when cloud backup is enabled.
-  resolveConflict: (l, c) => (l.encryptedAt >= c.encryptedAt ? l : c),
-});
+function build() {
+  return new RepositoryCoordinator<VaultEntry>({
+    name: "vault",
+    local: new LocalStoreRepository<VaultEntry>("vault"),
+    cloud,
+    resolveConflict: (l, c) => (l.encryptedAt >= c.encryptedAt ? l : c),
+  });
+}
+
+export function __attachVaultCloud(c: CloudRepository<VaultEntry>) {
+  cloud = c;
+  repo = build();
+}
 
 export const VaultService = {
   setProvider(p: VaultProvider) {

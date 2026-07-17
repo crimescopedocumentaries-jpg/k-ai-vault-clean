@@ -68,7 +68,7 @@ export class CloudKvRepository<T> implements CloudRepository<T> {
         user_id: uid,
         bucket: this.bucket,
         entry_key: id,
-        data: value as unknown as object,
+        data: value as never,
         updated_at: new Date().toISOString(),
       },
       { onConflict: "user_id,bucket,entry_key" },
