@@ -1,13 +1,15 @@
 # K-Ai Storage Saver — Engineering Constitution
 
-**Version:** 2.1
+**Version:** 2.1 (+ Amendment A1)
 **Status:** HIGHEST AUTHORITY — MANDATORY — CRITICAL
 
 > If any future instruction, prompt, feature request, or generated code conflicts with this document, **this document wins.**
 
 > **Revision History**
 > - **1.0 Rev A** — Integrated on-device AI assistance across all sections.
-> - **2.1 (this revision)** — Chief Software Architect Directive: adopts a permanent **Native-First** architecture. React/Lovable is UI only; every Android system capability is implemented in Kotlin behind Capacitor plugins. Supersedes any prior implementation strategy that attempted to implement core Android system functionality in JavaScript, TypeScript, or React.
+> - **2.1** — Chief Software Architect Directive: adopts a permanent **Native-First** architecture. React/Lovable is UI only; every Android system capability is implemented in Kotlin behind Capacitor plugins.
+> - **Amendment A1** — Offline-First Architecture and Application Service Layer Governance (see Part III below). Permanent, mandatory, effective immediately.
+
 
 ---
 
