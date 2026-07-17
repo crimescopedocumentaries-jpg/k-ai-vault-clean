@@ -397,3 +397,122 @@ This Engineering Constitution is the highest technical authority for K-Ai Storag
 If any future prompt, implementation, feature request, or generated code conflicts with this Constitution, **the Constitution SHALL take precedence.** All future development must comply with these architectural principles.
 
 **Recover Storage Safely. Protect Memories. Assist Intelligently. Build Natively.**
+
+---
+
+# PART III — AMENDMENT A1 (MANDATORY, PERMANENT)
+
+## Offline-First Architecture and Application Service Layer Governance
+
+**Status:** MANDATORY. Permanent amendment to the Engineering Constitution. Supersedes any conflicting implementation decisions. Applies to existing code, future code, refactoring, new features, bug fixes, AI-generated code, Android implementation, Capacitor integration, Supabase integration, cloud services, and native providers.
+
+**Enforcement policy for existing conflicts:**
+
+1. Do NOT immediately rewrite working code.
+2. Record the conflict as **Architecture Technical Debt**.
+3. All future implementations MUST comply with this amendment.
+4. Never introduce new violations.
+5. Progressively eliminate existing violations during future refactoring.
+
+### Article 1 — Single Source of Business Logic
+
+The Application Service Layer is the ONLY entry point into business logic. Every business operation flows through an Application Service: `StorageService`, `CompressionService`, `DuplicatesService`, `VaultService`, `CleanupService`, `ReportsService`, `SettingsService`, `NotificationsService`, `AuthService`, `SyncService`, `AIService`. No business logic shall exist inside UI components.
+
+### Article 2 — UI Independence
+
+React components, routes, pages, dialogs, hooks, and UI utilities MUST NEVER communicate directly with: Supabase, cloud APIs, AI providers, native Android APIs, repository implementations, database adapters, storage adapters, filesystem providers, encryption providers, notification providers, background workers, MediaStore, SAF, Capacitor plugins, WorkManager, or any external infrastructure. The UI may communicate ONLY with the Application Service Layer.
+
+### Article 3 — Infrastructure Isolation
+
+Every infrastructure implementation MUST be hidden behind an interface: `StorageProvider`, `CloudRepository`, `LocalRepository`, `AIProvider`, `NotificationProvider`, `VaultProvider`, `CompressionProvider`, `DuplicateProvider`, `BrowserProvider`, `AndroidProvider`. Future providers must be replaceable without modifying the UI.
+
+### Article 4 — Offline-First Principle
+
+Every feature MUST define:
+1. **Minimum Offline Capability** — always available without internet.
+2. **Online Enhancement** — additive when connectivity exists.
+
+Core functionality must never depend on internet connectivity. Cloud services enhance but never replace core functionality.
+
+### Article 5 — AI Architecture
+
+The UI MUST NEVER communicate directly with AI models. All AI requests flow:
+
+```
+UI → AIService → AIRouter → LocalAIProvider | CloudAIProvider
+```
+
+The `AIRouter` chooses the provider. The UI must remain unaware of which provider answered.
+
+### Article 6 — Repository Pattern
+
+The UI MUST NEVER communicate directly with repositories. Data flow:
+
+```
+Application Service → RepositoryCoordinator → LocalRepository (→ optional CloudRepository)
+```
+
+Synchronization decisions are made exclusively by `RepositoryCoordinator`.
+
+### Article 7 — Dependency Inversion
+
+Application Services depend ONLY on interfaces, never on concrete implementations. Example:
+
+```
+StorageService → StorageProvider (interface) → BrowserStorageProvider | AndroidStorageProvider | FutureStorageProvider
+```
+
+No service requires modification when replacing an implementation.
+
+### Article 8 — Automatic Synchronization
+
+Users shall NEVER manually select offline mode, online mode, or synchronization. These decisions belong to `ConnectivityService`, `OperationQueue`, and `RepositoryCoordinator`. Synchronization happens automatically.
+
+### Article 9 — No Duplicate Business Logic
+
+Business rules exist in exactly ONE place — the Application Service Layer. They shall never be duplicated inside React components, hooks, routes, dialogs, utilities, repositories, or providers.
+
+### Article 10 — Architecture Integrity
+
+No developer, AI assistant, automation tool, or future contributor may bypass this architecture. Any exception requires explicit architectural approval. Violations are architecture defects.
+
+### Article 11 — Future Native Migration
+
+All browser implementations MUST preserve compatibility with future Android native implementations. Replacing `BrowserStorageProvider` with `AndroidStorageProvider`, or `BrowserCompressionProvider` with `NativeCompressionProvider` (and every other provider), MUST require zero UI modifications.
+
+### Article 12 — Long-Term Maintainability
+
+The architecture shall prioritize: Maintainability, Replaceability, Scalability, Offline reliability, Native performance, Testability, Security, Low coupling, High cohesion. No implementation decision may compromise these principles.
+
+### Article 13 — Backward Compatibility
+
+Architecture improvements must preserve existing functionality unless an approved migration plan exists. Refactoring improves internal implementation without changing approved user-facing behavior. Breaking changes require: documented rationale, migration strategy, and rollback strategy. User experience must remain stable throughout architectural evolution.
+
+### Article 14 — Native-First Product Vision
+
+K-AI Storage Saver is an Android-first storage utility. The React frontend is the **presentation layer**. The Android native layer is the **execution layer**. Future engineering decisions shall prioritize: native performance, offline capability, low battery usage, efficient memory usage, and Android platform integration. Cloud services enhance the application but shall never replace the native capabilities that define the product. The architecture shall always preserve the ability to replace browser providers with Android native providers without requiring UI changes.
+
+---
+
+## Amendment A1 — Compliance Checklist (apply to every change)
+
+Before merging any change, confirm:
+
+- [ ] UI touches only Application Services (no direct Supabase / AI / native / repository imports in `src/components`, `src/routes`, `src/hooks`).
+- [ ] New infrastructure sits behind a provider interface.
+- [ ] Feature works offline; online paths are additive enhancements.
+- [ ] AI calls go through `AIService` → `AIRouter`.
+- [ ] Data access goes through a service → `RepositoryCoordinator`.
+- [ ] Services depend on interfaces, not concrete classes.
+- [ ] No manual online/offline/sync toggles exposed to the user.
+- [ ] No business logic duplicated outside the Application Service Layer.
+- [ ] Browser provider can be swapped for an Android native provider with zero UI changes.
+- [ ] Existing user-facing behavior preserved (or an approved migration plan exists).
+
+## Architecture Technical Debt Register
+
+Track pre-amendment violations here as they are discovered. Do not rewrite them reactively — resolve them during scheduled refactors.
+
+| ID | Location | Violated Article | Planned Resolution |
+|----|----------|------------------|--------------------|
+| _(none recorded yet — populate as violations are discovered)_ | | | |
