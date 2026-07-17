@@ -1,11 +1,18 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import { AppBar } from "@/components/AppBar";
 import { IconButton, Symbol } from "@/components/IconButton";
 import { Card } from "@/components/Card";
 import { MButton } from "@/components/MButton";
 import { StorageRing } from "@/components/StorageRing";
-import { previewSnapshot, previewBuckets, previewVault, previewJobs } from "@/services/previewData";
 import { formatBytes } from "@/lib/format";
+import {
+  StorageService,
+  ReportsService,
+  AIService,
+  type StorageReport,
+} from "@/modules";
+import type { ReportEntry } from "@/modules/reports/service";
 
 export const Route = createFileRoute("/_app/home")({
   component: Home,
@@ -41,7 +48,6 @@ export const Route = createFileRoute("/_app/home")({
 });
 
 type ScanState = "idle" | "scanned" | "recovered";
-// Preview: shape reflects the "before scan" state on the dashboard.
 const state: ScanState = "idle";
 
 function healthLabel(score: number) {
@@ -51,19 +57,91 @@ function healthLabel(score: number) {
   return { word: "Needs attention", tone: "text-destructive" };
 }
 
+type InsightRow = {
+  id: string;
+  label: string;
+  icon: string;
+  fileCount: number;
+  totalBytes: number;
+  recoverableBytes: number;
+};
+
+function buildInsights(report: StorageReport): InsightRow[] {
+  const b = report.breakdown;
+  const rows: InsightRow[] = [
+    { id: "videos", label: "Videos", icon: "movie", totalBytes: b.videos, fileCount: Math.max(1, Math.round(b.videos / (150 * 1024 * 1024))), recoverableBytes: Math.floor(b.videos * 0.35) },
+    { id: "photos", label: "Photos", icon: "image", totalBytes: b.photos, fileCount: Math.max(1, Math.round(b.photos / (3 * 1024 * 1024))), recoverableBytes: Math.floor(b.photos * 0.18) },
+    { id: "apps", label: "Apps & caches", icon: "apps", totalBytes: b.apps, fileCount: Math.max(1, Math.round(b.apps / (25 * 1024 * 1024))), recoverableBytes: Math.floor(b.apps * 0.12) },
+    { id: "other", label: "Other files", icon: "folder", totalBytes: b.other, fileCount: Math.max(1, Math.round(b.other / (5 * 1024 * 1024))), recoverableBytes: Math.floor(b.other * 0.2) },
+  ];
+  return rows.sort((x, y) => y.recoverableBytes - x.recoverableBytes).slice(0, 4);
+}
+
 function Home() {
   const navigate = useNavigate();
-  const snap = previewSnapshot;
-  const insights = previewBuckets.slice(0, 4);
-  const recent = previewJobs.filter((j) => j.status === "completed").slice(0, 3);
+  const [snap, setSnap] = useState<StorageReport | null>(null);
+  const [recent, setRecent] = useState<ReportEntry[]>([]);
+  const [recommendation, setRecommendation] = useState<string>(
+    "Compress large videos to recover the most space. Originals stay protected for 30 days.",
+  );
+
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      const [report, reports] = await Promise.all([
+        StorageService.scan(),
+        ReportsService.list(),
+      ]);
+      if (!alive) return;
+      setSnap(report);
+      setRecent(
+        reports
+          .sort((a, b) => b.at - a.at)
+          .slice(0, 3),
+      );
+      try {
+        const ai = await AIService.ask({
+          kind: "recommendation",
+          prompt: "Give one concise recommendation to recover storage safely.",
+          context: {
+            recoverableBytes: report.recoverableBytes,
+            breakdown: report.breakdown,
+          },
+        });
+        if (alive && ai.text) setRecommendation(ai.text);
+      } catch {
+        /* keep local default */
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  if (!snap) {
+    return (
+      <div className="flex flex-1 flex-col">
+        <AppBar
+          title="K-Ai — Storage Dashboard"
+          leading={
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary-container">
+              <Symbol name="hard_drive_2" filled className="text-on-primary-container" size={20} />
+            </div>
+          }
+        />
+        <div className="flex flex-1 items-center justify-center p-8 text-[13px] text-on-surface-variant">
+          Loading storage…
+        </div>
+      </div>
+    );
+  }
+
+  const insights = buildInsights(snap);
   const health = healthLabel(snap.healthScore);
 
-  const photosBytes = snap.breakdown.find((b) => b.category === "photos")?.bytes ?? 0;
-  const videosBytes = snap.breakdown.find((b) => b.category === "videos")?.bytes ?? 0;
-  const otherBytes =
-    snap.usedBytes - photosBytes - videosBytes > 0
-      ? snap.usedBytes - photosBytes - videosBytes
-      : 0;
+  const photosBytes = snap.breakdown.photos;
+  const videosBytes = snap.breakdown.videos;
+  const otherBytes = Math.max(0, snap.usedBytes - photosBytes - videosBytes);
 
   const primary =
     state === "idle"
@@ -191,16 +269,16 @@ function Home() {
                 Recommendation
               </p>
               <p className="mt-1 text-[15px] font-medium leading-snug text-on-primary-container">
-                Compress WhatsApp videos
+                {recommendation}
               </p>
               <p className="mt-1 text-[12px] text-on-primary-container/80">
-                Estimated recovery · 6.1 GB. Originals stay protected for 30 days.
+                Estimated recovery · {formatBytes(snap.recoverableBytes)}. Originals stay protected for 30 days.
               </p>
               <MButton
                 variant="text"
                 size="sm"
                 className="mt-2 -ml-3 text-on-primary-container"
-                onClick={() => navigate({ to: "/review", search: { bucket: "wa-videos" } })}
+                onClick={() => navigate({ to: "/scan" })}
               >
                 Review files
               </MButton>
@@ -213,7 +291,7 @@ function Home() {
           <SectionHeader title="Storage insights" action="See all" to="/scan/results" />
           <div className="mt-2 flex flex-col gap-2">
             {insights.map((b) => (
-              <Link key={b.id} to="/review" search={{ bucket: b.id }} className="ripple">
+              <Link key={b.id} to="/scan" className="ripple">
                 <Card padded={false} className="flex items-center gap-4 p-4">
                   <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-surface-2">
                     <Symbol name={b.icon} className="text-primary" size={22} />
@@ -240,42 +318,41 @@ function Home() {
         <div>
           <SectionHeader title="Recent activity" action="Job Center" to="/jobs" />
           <div className="mt-2 flex flex-col gap-2">
-            {recent.map((j) => (
-              <Card key={j.id} padded={false} className="flex items-center gap-4 p-4">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-tertiary-container">
-                  <Symbol
-                    name="check_circle"
-                    filled
-                    className="text-on-tertiary-container"
-                    size={22}
-                  />
+            {recent.length === 0 ? (
+              <Card padded={false} className="flex items-center gap-4 p-4">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-surface-2">
+                  <Symbol name="history" className="text-on-surface-variant" size={22} />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-[14px] font-medium text-on-surface">{j.title}</p>
+                  <p className="text-[14px] font-medium text-on-surface">No activity yet</p>
                   <p className="text-[12px] text-on-surface-variant">
-                    Recovered {formatBytes(j.bytesSaved ?? 0)} · {j.finishedAt}
+                    Completed scans and recoveries will appear here.
                   </p>
                 </div>
-                <Symbol name="verified" filled className="text-tertiary" size={20} />
               </Card>
-            ))}
+            ) : (
+              recent.map((j) => (
+                <Card key={j.id} padded={false} className="flex items-center gap-4 p-4">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-tertiary-container">
+                    <Symbol
+                      name="check_circle"
+                      filled
+                      className="text-on-tertiary-container"
+                      size={22}
+                    />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-[14px] font-medium text-on-surface">{j.summary}</p>
+                    <p className="text-[12px] text-on-surface-variant">
+                      Recovered {formatBytes(j.bytesAffected)} · {new Date(j.at).toLocaleString()}
+                    </p>
+                  </div>
+                  <Symbol name="verified" filled className="text-tertiary" size={20} />
+                </Card>
+              ))
+            )}
           </div>
         </div>
-
-        {/* Last Scan card */}
-        <Card padded={false} className="flex items-center gap-4 p-4">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-surface-2">
-            <Symbol name="history" className="text-primary" size={22} />
-          </div>
-          <div className="min-w-0 flex-1">
-            <p className="text-[14px] font-medium text-on-surface">Last scan</p>
-            <p className="text-[12px] text-on-surface-variant">Today · 8:42 PM</p>
-          </div>
-          <div className="text-right">
-            <p className="text-[13px] font-medium tabular-nums text-primary">5.2 GB</p>
-            <p className="text-[11px] text-on-surface-variant">recovered</p>
-          </div>
-        </Card>
 
         {/* 9 — Safe Vault status */}
         <Link to="/vault" className="ripple">
@@ -286,8 +363,7 @@ function Home() {
             <div className="min-w-0 flex-1">
               <p className="text-[15px] font-medium text-on-surface">K-Ai Safe Vault</p>
               <p className="text-[12px] text-on-surface-variant">
-                {previewVault.itemCount} items · {formatBytes(previewVault.protectedBytes)}{" "}
-                protected
+                Originals stay protected for 30 days
               </p>
             </div>
             <Symbol name="chevron_right" className="text-on-surface-variant" />
