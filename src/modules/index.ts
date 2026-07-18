@@ -17,6 +17,9 @@ export { AuthService } from "./auth/service";
 export { SyncService } from "./sync/service";
 export { NotificationsService } from "./notifications/service";
 export { HistoryService } from "./reports/history";
+export { SubscriptionService } from "./subscription/service";
+export { PremiumService } from "./premium/service";
+
 
 // Core primitives (advanced usage / native adapters)
 export { connectivity } from "./core/connectivity";

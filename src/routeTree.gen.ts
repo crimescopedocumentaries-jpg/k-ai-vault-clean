@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as WelcomeRouteImport } from './routes/welcome'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as ReviewRouteImport } from './routes/review'
+import { Route as PremiumRouteImport } from './routes/premium'
 import { Route as PermissionsRouteImport } from './routes/permissions'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as CompleteRouteImport } from './routes/complete'
@@ -55,6 +56,11 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
 const ReviewRoute = ReviewRouteImport.update({
   id: '/review',
   path: '/review',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PremiumRoute = PremiumRouteImport.update({
+  id: '/premium',
+  path: '/premium',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PermissionsRoute = PermissionsRouteImport.update({
@@ -211,6 +217,7 @@ export interface FileRoutesByFullPath {
   '/complete': typeof CompleteRoute
   '/mcp': typeof McpRoute
   '/permissions': typeof PermissionsRoute
+  '/premium': typeof PremiumRoute
   '/review': typeof ReviewRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/welcome': typeof WelcomeRoute
@@ -244,6 +251,7 @@ export interface FileRoutesByTo {
   '/complete': typeof CompleteRoute
   '/mcp': typeof McpRoute
   '/permissions': typeof PermissionsRoute
+  '/premium': typeof PremiumRoute
   '/review': typeof ReviewRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/welcome': typeof WelcomeRoute
@@ -278,6 +286,7 @@ export interface FileRoutesById {
   '/complete': typeof CompleteRoute
   '/mcp': typeof McpRoute
   '/permissions': typeof PermissionsRoute
+  '/premium': typeof PremiumRoute
   '/review': typeof ReviewRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/welcome': typeof WelcomeRoute
@@ -313,6 +322,7 @@ export interface FileRouteTypes {
     | '/complete'
     | '/mcp'
     | '/permissions'
+    | '/premium'
     | '/review'
     | '/sitemap.xml'
     | '/welcome'
@@ -346,6 +356,7 @@ export interface FileRouteTypes {
     | '/complete'
     | '/mcp'
     | '/permissions'
+    | '/premium'
     | '/review'
     | '/sitemap.xml'
     | '/welcome'
@@ -379,6 +390,7 @@ export interface FileRouteTypes {
     | '/complete'
     | '/mcp'
     | '/permissions'
+    | '/premium'
     | '/review'
     | '/sitemap.xml'
     | '/welcome'
@@ -414,6 +426,7 @@ export interface RootRouteChildren {
   CompleteRoute: typeof CompleteRoute
   McpRoute: typeof McpRoute
   PermissionsRoute: typeof PermissionsRoute
+  PremiumRoute: typeof PremiumRoute
   ReviewRoute: typeof ReviewRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   WelcomeRoute: typeof WelcomeRoute
@@ -455,6 +468,13 @@ declare module '@tanstack/react-router' {
       path: '/review'
       fullPath: '/review'
       preLoaderRoute: typeof ReviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/premium': {
+      id: '/premium'
+      path: '/premium'
+      fullPath: '/premium'
+      preLoaderRoute: typeof PremiumRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/permissions': {
@@ -704,6 +724,7 @@ const rootRouteChildren: RootRouteChildren = {
   CompleteRoute: CompleteRoute,
   McpRoute: McpRoute,
   PermissionsRoute: PermissionsRoute,
+  PremiumRoute: PremiumRoute,
   ReviewRoute: ReviewRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   WelcomeRoute: WelcomeRoute,

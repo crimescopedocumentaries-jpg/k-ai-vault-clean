@@ -104,11 +104,16 @@ function Settings() {
           />
         </Section>
 
+        <Section title="Subscription">
+          <LinkRow to="/premium" label="K-Ai Premium" icon="workspace_premium" />
+        </Section>
+
         <Section title="About">
           <LinkRow to="/settings/privacy" label="Privacy Policy" icon="policy" />
           <LinkRow to="/settings/terms" label="Terms of Use" icon="gavel" />
           <LinkRow to="/settings/about" label="About K-Ai" icon="info" />
         </Section>
+
       </div>
     </div>
   );

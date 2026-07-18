@@ -15,6 +15,8 @@ import { CompressionService } from "./compression/service";
 import { VaultService } from "./vault/service";
 import { CleanupService } from "./cleanup/service";
 import { NotificationsService } from "./notifications/service";
+import { SubscriptionService } from "./subscription/service";
+import { PremiumService } from "./premium/service";
 
 import { browserStorageProvider } from "./storage/providers/browser";
 import { browserDuplicatesProvider } from "./duplicates/providers/browser";
@@ -22,6 +24,7 @@ import { browserCompressionProvider } from "./compression/providers/browser";
 import { browserVaultProvider } from "./vault/providers/browser";
 import { browserCleanupProvider } from "./cleanup/providers/browser";
 import { browserNotificationsProvider } from "./notifications/providers/browser";
+import { mockSubscriptionProvider } from "./subscription/providers/mock";
 
 import { attachCloudRepositories } from "./cloud-wiring";
 
@@ -37,6 +40,9 @@ export function bootstrapModules() {
   VaultService.setProvider(browserVaultProvider);
   CleanupService.setProvider(browserCleanupProvider);
   NotificationsService.setProvider(browserNotificationsProvider);
+  SubscriptionService.setProvider(mockSubscriptionProvider);
+  void PremiumService.init();
 
   attachCloudRepositories();
 }
+
